@@ -29,20 +29,35 @@
 
 -(void)MS_handlepan:(UIPanGestureRecognizer *)recognizer
 {
-    NSLog(@"SHITS HAPPENING!!!!");
+    CGPoint originalLocation;
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        //if new touch
+        originalLocation = [recognizer locationInView:recognizer.view];
+        NSLog(@"%@", NSStringFromCGPoint(originalLocation));
+    }
+    // NSLog(@"HANDLING PAN");
 }
 
 
 //delegate methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
+    BOOL detectCenter = YES;
+    int edgePercent = 20; //%
+
     // Get the touch's location in the backPlacard view
     // if between the bounds we care about, return yes, else, no
     CGPoint coord = [touch locationInView: self.backPlacard];
-    NSLog(@"%@", NSStringFromCGPoint(coord));
+    float w = self.backPlacard.frame.size.width;
+    float edgeSize = (edgePercent/100.0)*w;
 
+    if (detectCenter && (coord.x > edgeSize) && (coord.x < w-edgeSize)) {
+        NSLog(@"CENTER YAY");
+        return YES;
+    }
+    NSLog(@"NOT CENTER");
 
-    return YES;
+    return NO;
 }
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
@@ -84,7 +99,10 @@ static MSSwipeDelegate *swipeDelegate = [[MSSwipeDelegate alloc] init];
     swipeDelegate.backPlacard.userInteractionEnabled = YES;
     UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS_handlepan:)];
     panRecognizer.maximumNumberOfTouches = 1;
+    [panRecognizer setDelegate:swipeDelegate];
+    // [panRecognizer _setHysteresis: 50.0];
     [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
+    [panRecognizer release];
 }
 
 
