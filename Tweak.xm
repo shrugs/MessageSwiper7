@@ -3,6 +3,7 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptController.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversationList.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversation.h>
+// #import <iOS7/PrivateFrameworks/ChatKit/CKGradientReferenceView.h>
 
 // Messages imports
 #import "MobileSMS/CKMessagesController.h"
