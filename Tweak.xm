@@ -1,9 +1,14 @@
 
+// ChatKit imports
+#import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptController.h>
+#import <iOS7/PrivateFrameworks/ChatKit/CKConversationList.h>
+#import <iOS7/PrivateFrameworks/ChatKit/CKConversation.h>
 
+// Messages imports
+#import "MobileSMS/CKMessagesController.h"
 
-
-
-
+// UIKit imports
+#import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
 
 
 
