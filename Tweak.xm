@@ -16,10 +16,16 @@
 // #import <substrate.h>
 // #import "MessageSwiper7/MS7ConvoPreview.h"
 @interface MSSwipeDelegate : NSObject <UIGestureRecognizerDelegate>
+
+@property (retain, nonatomic) UIView *backPlacard;
 -(void)MS_handlepan:(UIPanGestureRecognizer *)recognizer;
+
 @end
 
 @implementation MSSwipeDelegate
+
+@synthesize backPlacard = _backPlacard;
+
 
 -(void)MS_handlepan:(UIPanGestureRecognizer *)recognizer
 {
@@ -30,7 +36,13 @@
 //delegate methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    return NO;
+    // Get the touch's location in the backPlacard view
+    // if between the bounds we care about, return yes, else, no
+    CGPoint coord = [touch locationInView: self.backPlacard];
+    NSLog(@"%@", NSStringFromCGPoint(coord));
+
+
+    return YES;
 }
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
@@ -50,9 +62,7 @@
 // create the preview images
 // static MS7ConvoPreview *leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
 // static MS7ConvoPreview *rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
-static MSSwipeDelegate *swipeDelegate;
-static UIView *backPlacard;
-
+static MSSwipeDelegate *swipeDelegate = [[MSSwipeDelegate alloc] init];
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
@@ -62,24 +72,19 @@ static UIView *backPlacard;
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
 
-    backPlacard = [self.view.subviews objectAtIndex:0];
+    swipeDelegate.backPlacard = [self.view.subviews objectAtIndex:0];
     // create the preview images
     // leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
     // rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
 
-    backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
-    backPlacard.layer.borderWidth = 3.0f;
-    if (!swipeDelegate) {
-        NSLog(@"Creating swipeDelegate...");
-        // NSLog(@"%@", MSSwipeDelegate);
-        swipeDelegate = [[MSSwipeDelegate alloc] init];
-    }
-    // NSLog(@"%@", swipeDelegate);
+    swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
+    swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
 
 
-    backPlacard.userInteractionEnabled = YES;
+    swipeDelegate.backPlacard.userInteractionEnabled = YES;
     UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS_handlepan:)];
     panRecognizer.maximumNumberOfTouches = 1;
+    [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
 }
 
 
