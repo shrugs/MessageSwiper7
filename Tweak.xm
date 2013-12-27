@@ -70,16 +70,15 @@ static UIView *backPlacard;
 
 
 
-
-
-
-
+// There's only one CKTranscriptController instantiated.
+// It controls which CkTranscriptCollectionView is shown.
+// Those CKTranscriptCollectionView s have a subview of class CKTranscriptScrollView (orsomething like that)
 %hook CKTranscriptController
 
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
 
-    backPlacard = self.view;
+    backPlacard = [self.view.subviews objectAtIndex:0];
     // create the preview images
     // leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
     // rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
@@ -91,15 +90,12 @@ static UIView *backPlacard;
         // NSLog(@"%@", MSSwipeDelegate);
         swipeDelegate = [[MSSwipeDelegate alloc] init];
     }
-    NSLog(@"%@", swipeDelegate);
+    // NSLog(@"%@", swipeDelegate);
 
 
     backPlacard.userInteractionEnabled = YES;
     UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS_handlepan:)];
-    // panRecognizer.maximumNumberOfTouches = 1;
-    NSLog(@"%@", [backPlacard gestureRecognizers]);
-    [backPlacard addGestureRecognizer:panRecognizer];
-    NSLog(@"%@", [backPlacard gestureRecognizers]);
+    panRecognizer.maximumNumberOfTouches = 1;
 }
 
 
