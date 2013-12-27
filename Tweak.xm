@@ -3,62 +3,112 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptController.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversationList.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversation.h>
-// #import <iOS7/PrivateFrameworks/ChatKit/CKGradientReferenceView.h>
+#import <iOS7/PrivateFrameworks/ChatKit/CKGradientReferenceView.h>
+#import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptCollectionView.h>
 
 // Messages imports
-#import "MobileSMS/CKMessagesController.h"
+// #import "MobileSMS/CKMessagesController.h"
 
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
 #import <iOS7/Frameworks/UIKit/UIView.h>
 
+// #import <substrate.h>
+// #import "MessageSwiper7/MS7ConvoPreview.h"
+// #import "MessageSwiper7/MSSwipeDelegate.h"
+@interface MSSwipeDelegate : NSObject <UIGestureRecognizerDelegate>
+
+-(void)MS_handlepan:(UIPanGestureRecognizer *)recognizer;
+@end
+@implementation MSSwipeDelegate
+
+-(void)MS_handlepan:(UIPanGestureRecognizer *)recognizer
+{
+    NSLog(@"SHITS HAPPENING!!!!");
+}
+
+
+//delegate methods
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+    return YES;
+}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
+}
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+    return YES;
+}
+@end
 
 // PREFERENCES
 #define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
 
 
-#import "MessageSwiper7/MS7ConvoPreview.h"
-// create the preview images
-static MS7ConvoPreview *leftPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(-60,10,120,160)];
-static MS7ConvoPreview *rightPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
 
+// create the preview images
+// static MS7ConvoPreview *leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
+// static MS7ConvoPreview *rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
+static MSSwipeDelegate *swipeDelegate;
 static UIView *backPlacard;
 
 
+%hook CKTranscriptCollectionView
 
+- (id)initWithFrame:(struct CGRect)arg1 collectionViewLayout:(id)arg2 {
+    id r = %orig;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%hook CKTranscriptController
-
-- (id)initWithNavigationController:(id)navigationController {
-    backPlacard = self.view;
+    backPlacard = self;
     // create the preview images
-    leftPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(-60,10,120,160)];
-    rightPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
+    // leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
+    // rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
 
-    return %orig;
+    backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
+    backPlacard.layer.borderWidth = 3.0f;
+    if (!swipeDelegate) {
+        NSLog(@"Creating swipeDelegate...");
+        // NSLog(@"%@", MSSwipeDelegate);
+        swipeDelegate = [[MSSwipeDelegate alloc] init];
+    }
+    NSLog(@"%@", swipeDelegate);
+    UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS_handlepan:)];
+    // panRecognizer.maximumNumberOfTouches = 1;
+    NSLog(@"%@", [self gestureRecognizers]);
+    [self addGestureRecognizer:panRecognizer];
+    NSLog(@"%@", [self gestureRecognizers]);
+
+    return r;
 }
 
+
+
 %end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// %hook CKTranscriptController
+
+
+// %end
 
 
 %hook CKMessagesController
