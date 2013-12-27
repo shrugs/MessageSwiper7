@@ -11,6 +11,48 @@
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
 
 
+// PREFERENCES
+#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper.plist"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%hook CKTranscriptController
+
+- (id)initWithNavigationController:(id)arg1 {
+    NSLog(@"CKTranscriptController BITCH");
+    return %orig;
+}
+- (id)init {
+    NSLog(@"CKTranscriptController BITCH");
+    return %orig;
+}
+
+%end
 
 
 %hook CKMessagesController
