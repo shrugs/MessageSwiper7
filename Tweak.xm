@@ -30,7 +30,7 @@
 //delegate methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    return YES;
+    return NO;
 }
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
@@ -52,22 +52,6 @@
 // static MS7ConvoPreview *rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
 static MSSwipeDelegate *swipeDelegate;
 static UIView *backPlacard;
-
-
-// %hook CKTranscriptCollectionView
-
-// - (id)initWithFrame:(struct CGRect)arg1 collectionViewLayout:(id)arg2 {
-//     id r = %orig;
-//     return r;
-// }
-
-// %end
-
-
-
-
-
-
 
 
 // There's only one CKTranscriptController instantiated.
