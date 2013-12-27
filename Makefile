@@ -6,7 +6,7 @@ include theos/makefiles/common.mk
 
 TWEAK_NAME = MessageSwiper7
 MessageSwiper7_FILES = Tweak.xm
-MessageSwiper7_FRAMEWORKS = UIKit
+MessageSwiper7_FRAMEWORKS = UIKit QuartzCore Foundation
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
