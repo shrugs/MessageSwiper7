@@ -3,6 +3,7 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptController.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversationList.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversation.h>
+#import <iOS7/PrivateFrameworks/ChatKit/CKGradientReferenceView.h>
 
 // Messages imports
 #import "MobileSMS/CKMessagesController.h"
@@ -12,11 +13,15 @@
 
 
 // PREFERENCES
-#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper.plist"]
+#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
 
 
+#import "MessageSwiper7/MS7ConvoPreview.h"
+// create the preview images
+static MS7ConvoPreview *leftPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(-60,10,120,160)];
+static MS7ConvoPreview *rightPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
 
-
+static CKGradientReferenceView *backPlacard;
 
 
 
@@ -43,12 +48,12 @@
 
 %hook CKTranscriptController
 
-- (id)initWithNavigationController:(id)arg1 {
-    NSLog(@"CKTranscriptController BITCH");
-    return %orig;
-}
-- (id)init {
-    NSLog(@"CKTranscriptController BITCH");
+- (id)initWithNavigationController:(id)navigationController {
+    backPlacard = navigationController;
+    // create the preview images
+    leftPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(-60,10,120,160)];
+    // rightPreview = [[%c(MS7ConvoPreview) alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
+
     return %orig;
 }
 
