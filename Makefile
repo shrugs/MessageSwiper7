@@ -5,8 +5,8 @@ ARCHS = armv7 arm64
 include theos/makefiles/common.mk
 
 TWEAK_NAME = MessageSwiper7
-MessageSwiper7_FILES = Tweak.xm
-MessageSwiper7_FRAMEWORKS = UIKit QuartzCore Foundation
+MessageSwiper7_FILES = Tweak.xm CKBlurView/CKBlurView.m
+MessageSwiper7_FRAMEWORKS = UIKit QuartzCore Foundation CoreGraphics
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

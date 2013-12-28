@@ -16,8 +16,7 @@
 // #import <substrate.h>
 
 // MSConvoPreview
-#import <CKBlurView/CKBlurView.h>
-
+#import "CKBlurView/CKBlurView.h"
 @interface MS7ConvoPreview : CKBlurView
 
 @property (assign) NSString *contactName;
