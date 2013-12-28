@@ -35,14 +35,16 @@
         originalLocation = [recognizer locationInView:recognizer.view];
         NSLog(@"%@", NSStringFromCGPoint(originalLocation));
     }
-    // NSLog(@"HANDLING PAN");
+
+
+
 }
 
 
 //delegate methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    BOOL detectCenter = YES;
+    BOOL detectCenter = NO;
     int edgePercent = 20; //%
 
     // Get the touch's location in the backPlacard view
@@ -52,16 +54,19 @@
     float edgeSize = (edgePercent/100.0)*w;
 
     if (detectCenter && (coord.x > edgeSize) && (coord.x < w-edgeSize)) {
-        NSLog(@"CENTER YAY");
+        NSLog(@"CENTER");
         return YES;
     }
-    NSLog(@"NOT CENTER");
-
+    if (!detectCenter && ((coord.x < edgeSize) || (coord.x > w-edgeSize))) {
+        NSLog(@"NOT CENTER");
+        return YES;
+    }
+    NSLog(@"NONE");
     return NO;
 }
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
-    return YES;
+    return NO;
 }
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
