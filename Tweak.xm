@@ -53,16 +53,15 @@ static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
     // [panRecognizer _setHysteresis: 50.0];
     [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
     [panRecognizer release];
+    // now add the previews to the backPlacard
+    [swipeDelegate addPreviews];
 }
 
--(id)init {
-    id r = %orig;
+// - (id)initWithNavigationController:(id)arg1 {
+//     id r = %orig;
 
-    swipeDelegate.leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
-    swipeDelegate.rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(self.view.frame.size.width+60,10,120,160)];
-
-    return r;
-}
+//     return r;
+// }
 
 
 %end
