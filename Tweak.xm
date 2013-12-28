@@ -6,6 +6,7 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKGradientReferenceView.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptCollectionView.h>
 
+
 // Messages imports
 // #import "MobileSMS/CKMessagesController.h"
 
@@ -15,121 +16,19 @@
 
 // #import <substrate.h>
 
-// MSConvoPreview
-#import "CKBlurView/CKBlurView.h"
-@interface MS7ConvoPreview : CKBlurView
+#import "MessageSwiper7/MS7SwipeDelegate.h"
+#import "MessageSwiper7/MS7ConvoPreview.h"
 
-@property (assign) NSString *contactName;
-@property (assign) NSString *mostRecentMessage;
-@property (assign) UILabel *nameLabel;
-@property (assign) UILabel *messageLabel;
-
-- (void) setConversation:(CKConversation *)convo;
-
-@end
-@implementation MS7ConvoPreview
-
-@synthesize contactName = _contactName;
-@synthesize mostRecentMessage = _mostRecentMessage;
-@synthesize nameLabel = _nameLabel;
-@synthesize messageLabel = _messageLabel;
-
-- (void) setConversation:(CKConversation *)convo
-{
-    self.contactName = [convo name];
-    //would set mostRecentMessage here
-    self.mostRecentMessage = [[convo latestMessage] previewText]; //returns CKIMMessage => NSString
-
-}
-
-- (void)baseInit {
-    _contactName = NULL;
-    _contactName = @"Unknown - Error";
-    _mostRecentMessage = @"Error Retrieving Message.";
-}
-
-- (id)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self baseInit];
-    }
-    return self;
-}
-
-@end
-
-
-
-// MSSwipeDelegate
-@interface MSSwipeDelegate : NSObject <UIGestureRecognizerDelegate>
-
-@property (retain, nonatomic) UIView *backPlacard;
--(void)MS_handlepan:(UIPanGestureRecognizer *)recognizer;
-
-@end
-
-@implementation MSSwipeDelegate
-
-@synthesize backPlacard = _backPlacard;
-
-
--(void)MS_handlepan:(UIPanGestureRecognizer *)recognizer
-{
-    CGPoint originalLocation;
-    if (recognizer.state == UIGestureRecognizerStateBegan) {
-        //if new touch
-        originalLocation = [recognizer locationInView:recognizer.view];
-        NSLog(@"%@", NSStringFromCGPoint(originalLocation));
-    }
-
-
-
-}
-
-
-//delegate methods
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
-{
-    BOOL detectCenter = NO;
-    int edgePercent = 20; //%
-
-    // Get the touch's location in the backPlacard view
-    // if between the bounds we care about, return yes, else, no
-    CGPoint coord = [touch locationInView: self.backPlacard];
-    float w = self.backPlacard.frame.size.width;
-    float edgeSize = (edgePercent/100.0)*w;
-
-    if (detectCenter && (coord.x > edgeSize) && (coord.x < w-edgeSize)) {
-        NSLog(@"CENTER");
-        return YES;
-    }
-    if (!detectCenter && ((coord.x < edgeSize) || (coord.x > w-edgeSize))) {
-        NSLog(@"NOT CENTER");
-        return YES;
-    }
-    NSLog(@"NONE");
-    return NO;
-}
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
-{
-    return NO;
-}
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
-{
-    return YES;
-}
-@end
 
 // PREFERENCES
-// #define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
+#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
 
 
 
 // create the preview images
-// static MS7ConvoPreview *leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
-// static MS7ConvoPreview *rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
-static MSSwipeDelegate *swipeDelegate = [[MSSwipeDelegate alloc] init];
+static MS7ConvoPreview *leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
+static MS7ConvoPreview *rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
+static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
