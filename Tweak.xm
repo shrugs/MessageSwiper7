@@ -14,7 +14,55 @@
 #import <iOS7/Frameworks/UIKit/UIView.h>
 
 // #import <substrate.h>
-// #import "MessageSwiper7/MS7ConvoPreview.h"
+
+// MSConvoPreview
+#import <CKBlurView/CKBlurView.h>
+
+@interface MS7ConvoPreview : CKBlurView
+
+@property (assign) NSString *contactName;
+@property (assign) NSString *mostRecentMessage;
+@property (assign) UILabel *nameLabel;
+@property (assign) UILabel *messageLabel;
+
+- (void) setConversation:(CKConversation *)convo;
+
+@end
+@implementation MS7ConvoPreview
+
+@synthesize contactName = _contactName;
+@synthesize mostRecentMessage = _mostRecentMessage;
+@synthesize nameLabel = _nameLabel;
+@synthesize messageLabel = _messageLabel;
+
+- (void) setConversation:(CKConversation *)convo
+{
+    self.contactName = [convo name];
+    //would set mostRecentMessage here
+    self.mostRecentMessage = [[convo latestMessage] previewText]; //returns CKIMMessage => NSString
+
+}
+
+- (void)baseInit {
+    _contactName = NULL;
+    _contactName = @"Unknown - Error";
+    _mostRecentMessage = @"Error Retrieving Message.";
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self baseInit];
+    }
+    return self;
+}
+
+@end
+
+
+
+// MSSwipeDelegate
 @interface MSSwipeDelegate : NSObject <UIGestureRecognizerDelegate>
 
 @property (retain, nonatomic) UIView *backPlacard;
