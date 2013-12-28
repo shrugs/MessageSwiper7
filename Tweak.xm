@@ -26,8 +26,7 @@
 
 
 // create the preview images
-static MS7ConvoPreview *leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
-static MS7ConvoPreview *rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320+60,10,120,160)];
+
 static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 
 // There's only one CKTranscriptController instantiated.
@@ -56,6 +55,14 @@ static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
     [panRecognizer release];
 }
 
+-(id)init {
+    id r = %orig;
+
+    swipeDelegate.leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
+    swipeDelegate.rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(self.view.frame.size.width+60,10,120,160)];
+
+    return r;
+}
 
 
 %end
