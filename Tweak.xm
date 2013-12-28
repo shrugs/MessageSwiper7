@@ -38,9 +38,6 @@ static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
     %orig;
 
     swipeDelegate.backPlacard = [self.view.subviews objectAtIndex:0];
-    // create the preview images
-    // leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(-60,10,120,160)];
-    // rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
 
     swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
     swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
