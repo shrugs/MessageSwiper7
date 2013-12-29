@@ -5,7 +5,7 @@
 @synthesize backPlacard = _backPlacard;
 @synthesize leftPreview = _leftPreview;
 @synthesize rightPreview = _rightPreview;
-@synthesize convos= _convos;
+@synthesize convos = _convos;
 @synthesize currentConvoIndex = _currentConvoIndex;
 @synthesize wrapAroundEnabled = _wrapAroundEnabled;
 @synthesize ckMessagesController= _ckMessagesController;
@@ -86,6 +86,9 @@
         self.leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
         self.rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
         self.wrapAroundEnabled = YES;
+        // self.convos = [[NSMutableArray alloc] init];
+        NSLog(@"PAY ATTENTION TO ME PLS");
+        NSLog(@"%@", self.convos);
     }
     return self;
 }

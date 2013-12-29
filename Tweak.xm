@@ -43,7 +43,6 @@ static BOOL didRun = NO;
         if (!didRun) {
             didRun = YES;
 
-
             swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
             swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
 
@@ -54,7 +53,7 @@ static BOOL didRun = NO;
             [panRecognizer setDelegate:swipeDelegate];
             // [panRecognizer _setHysteresis: 50.0];
             [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
-            [panRecognizer release];
+            // [panRecognizer release]; //CAUSES SAFE MODE WTF
             // now add the previews to the backPlacard
             [swipeDelegate addPreviews];
 
@@ -89,12 +88,6 @@ static BOOL didRun = NO;
 // // - (id)primaryNavigationController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
 // - (void)setTranscriptController:(id)fp8 { %log; %orig; }
 // - (void)setConversationListController:(id)fp8 { %log; %orig; }
-- (id)conversationListController {
-    %log;
-    id r = %orig;
-    NSLog(@" = %@", r);
-    return r;
-}
 // // - (void)mailComposeController:(id)fp8 didFinishWithResult:(int)fp12 error:(id)fp16 { %log; %orig; }
 // // - (void)showMailComposeSheetForAddress:(id)fp8 { %log; %orig; }
 // // - (void)_showMailComposeSheet { %log; %orig; }
@@ -102,8 +95,10 @@ static BOOL didRun = NO;
 - (void)_conversationLeft:(id)fp8 {
 
     // left a conversation? update the list
-    [[%c(CKConversationList) sharedConversationList] conversations];
     %orig;
+    // if (didRun) {
+    //     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    // }
 }
 // // - (void)_handleConversationBecameStale:(id)fp8 { %log; %orig; }
 
@@ -113,28 +108,49 @@ static BOOL didRun = NO;
 // - (BOOL)hasUnreadFilteredConversationsIgnoringMessages:(id)fp8 { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
 // - (void)showConversationList:(BOOL)fp8 { %log; %orig; }
 
-- (BOOL)resumeToConversation:(id)fp8 {
-    BOOL r = %orig;
 
-    swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+// PROBLEM
 
-    return r;
+// - (BOOL)resumeToConversation:(id)fp8 {
+
+//     // if (didRun) {
+//     //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+//     // }
+//     // NSLog(@"TESTING");
+
+//     return %orig;
+// }
+
+
+
+- (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
+    %orig;
+    // swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+
+    // if (didRun) {
+    //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+    // }
+    // NSLog(@"TESTING");
+
+    // NSLog(@"%@", swipeDelegate);
 }
+- (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
+    %orig;
+    // swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    // if (didRun) {
+    //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+    // }
+    // NSLog(@"TESTING");
+}
+
+// END PROBLEM
+
+
+
 
 // // - (void)showConversationAndMessageForSearchURL:(id)fp8 { %log; %orig; }
 // // - (void)showConversationAndMessageForChatGUID:(id)fp8 messageGUID:(id)fp12 animate:(BOOL)fp16 { %log; %orig; }
-- (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
 
-    swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
-    %orig;
-}
-- (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
-
-    swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
-    %orig;
-}
 // - (id)transcriptController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
 // // - (BOOL)isShowingTranscriptController { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
 // // - (BOOL)isShowingConversationListController { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
@@ -159,23 +175,29 @@ static BOOL didRun = NO;
 
 // }
 
-// - (void)navigationController:(id)fp8 didShowViewController:(id)fp12 animated:(BOOL)fp16 { %log; %orig; }
-// - (void)navigationController:(id)fp8 willShowViewController:(id)fp12 animated:(BOOL)fp16 { %log; %orig; }
-// // - (void)viewDidDisappear:(BOOL)fp8 { %log; %orig; }
-// // - (void)viewWillDisappear:(BOOL)fp8 { %log; %orig; }
-// // - (void)viewDidAppear:(BOOL)fp8 { %log; %orig; }
-// // - (void)viewWillAppear:(BOOL)fp8 { %log; %orig; }
-
-
-// // - (void)viewDidUnload { %log; %orig; }
-// // - (void)loadView { %log; %orig; }
-// // - (void)parentControllerDidBecomeActive { %log; %orig; }
-// // - (void)parentControllerDidResume:(BOOL)fp8 animating:(BOOL)fp12 { %log; %orig; }
 - (id)init {
     id r = %orig;
 
-    swipeDelegate.ckMessagesController = self;
+    // swipeDelegate.ckMessagesController = self;
 
     return r;
 }
 %end
+
+// %hook CKConversation
+
+// - (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2
+// {
+//     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject:self];
+//     %orig;
+// }
+// - (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3
+// {
+//     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject:self];
+//     %orig;
+
+// }
+
+// %end
