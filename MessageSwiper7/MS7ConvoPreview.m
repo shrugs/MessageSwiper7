@@ -29,6 +29,7 @@
     [self.messageLabel setBackgroundColor: [UIColor redColor]];
     [self addSubview: self.nameLabel];
     [self addSubview: self.messageLabel];
+    self.alpha = 0;
 
 }
 

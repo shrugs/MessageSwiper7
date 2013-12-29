@@ -5,6 +5,8 @@
 @synthesize backPlacard = _backPlacard;
 @synthesize leftPreview = _leftPreview;
 @synthesize rightPreview = _rightPreview;
+@synthesize convos= _convos;
+@synthesize currentConvoIndex = _currentConvoIndex;
 
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
@@ -45,7 +47,6 @@
 -(id)init {
     self = [super init];
     if (self) {
-        self.isInConvo = NO;
         self.leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
         self.rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
     }

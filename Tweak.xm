@@ -38,9 +38,13 @@ static BOOL didRun = NO;
     %orig;
     swipeDelegate.backPlacard = self.view.superview;
 
+
+
     if (swipeDelegate.backPlacard) {
         if (!didRun) {
             didRun = YES;
+
+
             swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
             swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
 
@@ -54,6 +58,7 @@ static BOOL didRun = NO;
             [panRecognizer release];
             // now add the previews to the backPlacard
             [swipeDelegate addPreviews];
+
         }
         [swipeDelegate addPreviews];
     }
@@ -78,19 +83,29 @@ static BOOL didRun = NO;
 
 
 
-// %hook CKMessagesController
+%hook CKMessagesController
 //
 // - (id)currentConversation { %log; id r = %orig; NSLog(@" = %@", r); return r; }
 // // - (void)setPrimaryNavigationController:(id)fp8 { %log; %orig; }
 // // - (id)primaryNavigationController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
 // - (void)setTranscriptController:(id)fp8 { %log; %orig; }
 // - (void)setConversationListController:(id)fp8 { %log; %orig; }
-// - (id)conversationListController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
+- (id)conversationListController {
+    %log;
+    id r = %orig;
+    NSLog(@" = %@", r);
+    return r;
+}
 // // - (void)mailComposeController:(id)fp8 didFinishWithResult:(int)fp12 error:(id)fp16 { %log; %orig; }
 // // - (void)showMailComposeSheetForAddress:(id)fp8 { %log; %orig; }
 // // - (void)_showMailComposeSheet { %log; %orig; }
 // // - (void)showNewMessageCompositionForMessageParts:(id)fp8 { %log; %orig; }
-// - (void)_conversationLeft:(id)fp8 { %log; %orig; }
+- (void)_conversationLeft:(id)fp8 {
+
+    // left a conversation? update the list
+    [[%c(CKConversationList) sharedConversationList] conversations];
+    %orig;
+}
 // // - (void)_handleConversationBecameStale:(id)fp8 { %log; %orig; }
 
 
@@ -98,11 +113,27 @@ static BOOL didRun = NO;
 // - (BOOL)showUnreadConversationsWithLastConversation:(id)fp8 ignoringMessages:(id)fp12 { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
 // - (BOOL)hasUnreadFilteredConversationsIgnoringMessages:(id)fp8 { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
 // - (void)showConversationList:(BOOL)fp8 { %log; %orig; }
-// - (BOOL)resumeToConversation:(id)fp8 { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
+
+- (BOOL)resumeToConversation:(id)fp8 {
+    BOOL r = %orig;
+
+    swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+
+    return r;
+}
+
 // // - (void)showConversationAndMessageForSearchURL:(id)fp8 { %log; %orig; }
 // // - (void)showConversationAndMessageForChatGUID:(id)fp8 messageGUID:(id)fp12 animate:(BOOL)fp16 { %log; %orig; }
-// - (void)showConversation:(id)fp8 animate:(BOOL)fp12 { %log; %orig; }
-// - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 { %log; %orig; }
+- (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
+
+    swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    %orig;
+}
+- (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
+
+    swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    %orig;
+}
 // - (id)transcriptController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
 // // - (BOOL)isShowingTranscriptController { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
 // // - (BOOL)isShowingConversationListController { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
@@ -140,4 +171,4 @@ static BOOL didRun = NO;
 // // - (void)parentControllerDidBecomeActive { %log; %orig; }
 // // - (void)parentControllerDidResume:(BOOL)fp8 animating:(BOOL)fp12 { %log; %orig; }
 // - (id)init { %log; id r = %orig; NSLog(@" = %@", r); return r; }
-// %end
+%end
