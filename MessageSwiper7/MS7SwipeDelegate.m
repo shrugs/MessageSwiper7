@@ -6,7 +6,6 @@
 @synthesize leftPreview = _leftPreview;
 @synthesize rightPreview = _rightPreview;
 @synthesize isInConvo = _isInConvo;
-static float swipeScalar = 1;
 
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
@@ -14,11 +13,14 @@ static float swipeScalar = 1;
     // CGPoint originalLocation;
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         // reset the previews just in case they're still animating
-        [self.leftPreview.layer removeAllAnimations];
-        [self.rightPreview.layer removeAllAnimations];
+        [self.backPlacard.layer removeAllAnimations];
+        [self resetPreviewsAnimated:NO];
         [self.leftPreview setHidden: NO];
         [self.rightPreview setHidden: NO];
     }
+
+    NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
+    NSLog(@"%@", NSStringFromCGPoint(self.rightPreview.center));
 
     // now move both of the views max(translation, 120)
     int translation = [recognizer translationInView:recognizer.view].x;
@@ -26,9 +28,9 @@ static float swipeScalar = 1;
 
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
-    int newX = (int) -60+translation*swipeScalar;
+    int newX = (int) -60+translation;
     [self.leftPreview setCenter:CGPointMake(MIN(60, newX), self.leftPreview.center.y)];
-    newX = (int) self.backPlacard.frame.size.width+60+translation*swipeScalar;
+    newX = (int) self.backPlacard.frame.size.width+60+translation;
     [self.rightPreview setCenter:CGPointMake(MAX(self.backPlacard.frame.size.width-60, newX), self.rightPreview.center.y)];
 
 
