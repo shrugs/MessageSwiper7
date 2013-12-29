@@ -7,7 +7,7 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptCollectionView.h>
 
 
-
+#import "MobileSMS/CKMessagesController.h"
 
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
