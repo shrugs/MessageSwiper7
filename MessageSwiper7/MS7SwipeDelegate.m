@@ -5,7 +5,6 @@
 @synthesize backPlacard = _backPlacard;
 @synthesize leftPreview = _leftPreview;
 @synthesize rightPreview = _rightPreview;
-@synthesize isInConvo = _isInConvo;
 
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
@@ -84,11 +83,6 @@
 //delegate methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    // If we're on the converstion list page, don't worry about touches
-    // if (!self.isInConvo) {
-    //     NSLog(@"Not in convo, ignoring...");
-    //     return NO;
-    // }
 
     BOOL detectCenter = NO;
     int edgePercent = 20; //%

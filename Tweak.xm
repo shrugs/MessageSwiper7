@@ -78,7 +78,7 @@ static BOOL didRun = NO;
 
 
 
-%hook CKMessagesController
+// %hook CKMessagesController
 //
 // - (id)currentConversation { %log; id r = %orig; NSLog(@" = %@", r); return r; }
 // // - (void)setPrimaryNavigationController:(id)fp8 { %log; %orig; }
@@ -122,15 +122,10 @@ static BOOL didRun = NO;
 // - (void)_popToConversationListAndPerformBlockAnimated:(BOOL)fp8 block:(id)fp { %log; %orig; }
 // // - (void)_presentNewMessageCompositionPanel:(id)fp8 animated:(BOOL)fp12 { %log; %orig; }
 
-- (void)setCurrentConversation:(id)convo {
-    if (convo != nil) {
-        swipeDelegate.isInConvo = YES;
-    } else {
-        swipeDelegate.isInConvo = NO;
-    }
-    %orig;
+// - (void)setCurrentConversation:(id)convo {
+//     %orig;
 
-}
+// }
 
 // - (void)navigationController:(id)fp8 didShowViewController:(id)fp12 animated:(BOOL)fp16 { %log; %orig; }
 // - (void)navigationController:(id)fp8 willShowViewController:(id)fp12 animated:(BOOL)fp16 { %log; %orig; }
@@ -145,4 +140,4 @@ static BOOL didRun = NO;
 // // - (void)parentControllerDidBecomeActive { %log; %orig; }
 // // - (void)parentControllerDidResume:(BOOL)fp8 animating:(BOOL)fp12 { %log; %orig; }
 // - (id)init { %log; id r = %orig; NSLog(@" = %@", r); return r; }
-%end
+// %end
