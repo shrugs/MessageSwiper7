@@ -6,30 +6,34 @@
 @synthesize leftPreview = _leftPreview;
 @synthesize rightPreview = _rightPreview;
 @synthesize isInConvo = _isInConvo;
+static float swipeScalar = 1;
 
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
     // CGPoint originalLocation;
-    // if (recognizer.state == UIGestureRecognizerStateBegan) {
-    //     //if new touch
-    //     originalLocation = [recognizer locationInView:recognizer.view];
-    //     NSLog(@"%@", NSStringFromCGPoint(originalLocation));
-    // }
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        // reset the previews just in case they're still animating
+        [self.leftPreview.layer removeAllAnimations];
+        [self.rightPreview.layer removeAllAnimations];
+        [self.leftPreview setHidden: NO];
+        [self.rightPreview setHidden: NO];
+    }
 
     // now move both of the views max(translation, 120)
     int translation = [recognizer translationInView:recognizer.view].x;
+    NSLog(@"%i", translation);
 
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
-    int newX = self.leftPreview.center.x+translation;
+    int newX = (int) -60+translation*swipeScalar;
     [self.leftPreview setCenter:CGPointMake(MIN(60, newX), self.leftPreview.center.y)];
-    newX = self.rightPreview.center.x+translation;
+    newX = (int) self.backPlacard.frame.size.width+60+translation*swipeScalar;
     [self.rightPreview setCenter:CGPointMake(MAX(self.backPlacard.frame.size.width-60, newX), self.rightPreview.center.y)];
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
-        [self resetPreviews];
+        [self resetPreviewsAnimated:YES];
     }
 
 
@@ -47,16 +51,37 @@
 }
 
 -(void)addPreviews {
-    [self resetPreviews];
+    [self resetPreviewsAnimated: NO];
 
     [self.backPlacard addSubview: self.leftPreview];
     [self.backPlacard addSubview: self.rightPreview];
+    [self.leftPreview setHidden:YES];
+    [self.rightPreview setHidden: YES];
 
 }
 
--(void)resetPreviews {
-    [self.leftPreview setCenter:CGPointMake(-60,70+80)];
-    [self.rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60,70+80)];
+-(void)resetPreviewsAnimated:(BOOL)shouldAnimate {
+    if (!shouldAnimate) {
+        [self.leftPreview setCenter:CGPointMake(-60,70+80)];
+        [self.rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60,70+80)];
+        [self.leftPreview setHidden:YES];
+        [self.rightPreview setHidden: YES];
+    } else {
+        // animate to default positions.
+        [UIView animateWithDuration:0.4
+                              delay:0.0
+                            options: UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                            self.leftPreview.center = CGPointMake(-60, 70+80);
+                            // [self.leftPreview setCenter:CGPointMake(-60,70+80)];
+                            // [self.rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60,70+80)];
+                            self.rightPreview.center = CGPointMake(self.backPlacard.frame.size.width+60, 70+80);
+                         }
+                         completion:^(BOOL finished){
+                             [self.leftPreview setHidden:YES];
+                             [self.rightPreview setHidden: YES];
+                         }];
+    }
 }
 
 //delegate methods

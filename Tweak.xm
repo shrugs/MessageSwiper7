@@ -123,20 +123,6 @@ static BOOL didRun = NO;
 
 - (void)setCurrentConversation:(id)convo {
     if (convo != nil) {
-        // is in conversation
-        swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
-        swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
-
-
-        swipeDelegate.backPlacard.userInteractionEnabled = YES;
-        UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS_handlepan:)];
-        panRecognizer.maximumNumberOfTouches = 1;
-        [panRecognizer setDelegate:swipeDelegate];
-        // [panRecognizer _setHysteresis: 50.0];
-        [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
-        [panRecognizer release];
-        // now add the previews to the backPlacard
-        [swipeDelegate addPreviews];
         swipeDelegate.isInConvo = YES;
     } else {
         swipeDelegate.isInConvo = NO;
