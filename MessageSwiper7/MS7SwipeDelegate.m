@@ -12,6 +12,8 @@
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
 
+    static BOOL leftTriggered;
+    static BOOL rightTriggered;
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         // reset the previews just in case they're still animating
         [self.backPlacard.layer removeAllAnimations];
@@ -19,6 +21,8 @@
         self.leftPreview.alpha = 1.0f;
         self.leftPreview.alpha = 1.0f;
         NSLog(@"BEGAN SHIT");
+        leftTriggered = NO;
+        rightTriggered = NO;
     }
 
 
@@ -30,16 +34,18 @@
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
     int newX = (int) -60+translation;
     [self.leftPreview setCenter:CGPointMake(MIN(60, newX), self.leftPreview.center.y)];
+    leftTriggered = self.leftPreview.center.x == 60;
+
+
     newX = (int) self.backPlacard.frame.size.width+60+translation;
     [self.rightPreview setCenter:CGPointMake(MAX(self.backPlacard.frame.size.width-60, newX), self.rightPreview.center.y)];
+    rightTriggered = self.rightPreview.center.x == self.backPlacard.frame.size.width-60;
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
         NSLog(@"ENDED SHIT");
         [self resetPreviewsAnimated:YES];
     }
-    NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
-    NSLog(@"%f", self.leftPreview.alpha);
 
 
 }
