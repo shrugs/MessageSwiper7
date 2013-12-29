@@ -15,12 +15,13 @@
         // reset the previews just in case they're still animating
         [self.backPlacard.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
-        [self.leftPreview setHidden: NO];
-        [self.rightPreview setHidden: NO];
+        self.leftPreview.alpha = 1.0f;
+        self.leftPreview.alpha = 1.0f;
+        NSLog(@"BEGAN SHIT");
     }
 
-    NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
-    NSLog(@"%@", NSStringFromCGPoint(self.rightPreview.center));
+    // NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
+    // NSLog(@"%@", NSStringFromCGPoint(self.rightPreview.center));
 
     // now move both of the views max(translation, 120)
     int translation = [recognizer translationInView:recognizer.view].x;
@@ -35,9 +36,11 @@
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
+        NSLog(@"ENDED SHIT");
         [self resetPreviewsAnimated:YES];
     }
 
+    NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
 
 }
 
@@ -53,12 +56,9 @@
 }
 
 -(void)addPreviews {
-    [self resetPreviewsAnimated: NO];
-
     [self.backPlacard addSubview: self.leftPreview];
     [self.backPlacard addSubview: self.rightPreview];
-    [self.leftPreview setHidden:YES];
-    [self.rightPreview setHidden: YES];
+    [self resetPreviewsAnimated: NO];
 
 }
 
@@ -66,8 +66,8 @@
     if (!shouldAnimate) {
         [self.leftPreview setCenter:CGPointMake(-60,70+80)];
         [self.rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60,70+80)];
-        [self.leftPreview setHidden:YES];
-        [self.rightPreview setHidden: YES];
+        self.leftPreview.alpha = 1.0;
+        self.rightPreview.alpha = 1.0;
     } else {
         // animate to default positions.
         [UIView animateWithDuration:0.4
@@ -75,14 +75,11 @@
                             options: UIViewAnimationOptionCurveEaseOut
                          animations:^{
                             self.leftPreview.center = CGPointMake(-60, 70+80);
-                            // [self.leftPreview setCenter:CGPointMake(-60,70+80)];
-                            // [self.rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60,70+80)];
                             self.rightPreview.center = CGPointMake(self.backPlacard.frame.size.width+60, 70+80);
+                            self.leftPreview.alpha = 0;
+                            self.rightPreview.alpha = 0;
                          }
-                         completion:^(BOOL finished){
-                             [self.leftPreview setHidden:YES];
-                             [self.rightPreview setHidden: YES];
-                         }];
+                         completion:nil];
     }
 }
 
