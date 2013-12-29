@@ -16,6 +16,7 @@
 }
 
 - (void)baseInit {
+    [self setUserInteractionEnabled: NO];
     [self setBackgroundColor: [UIColor blueColor]];
 
     self.contactName = @"Unknown - Error";

@@ -41,6 +41,7 @@
     }
 
     NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
+    NSLog(@"%f", self.leftPreview.alpha);
 
 }
 
