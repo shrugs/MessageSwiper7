@@ -126,11 +126,13 @@ static BOOL didRun = NO;
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
 
     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
     %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
 
     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
     %orig;
 }
 // - (id)transcriptController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
