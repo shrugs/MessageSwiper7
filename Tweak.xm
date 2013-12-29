@@ -25,9 +25,9 @@
 
 
 
-// create the preview images
-
+#pragma mark - STATICS
 static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
+static BOOL didRun = NO;
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
@@ -36,26 +36,31 @@ static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
+    if (!didRun) {
+        swipeDelegate.backPlacard = self.view.superview;
 
-    swipeDelegate.backPlacard = [self.view.subviews objectAtIndex:0];
+        if (swipeDelegate.backPlacard) {
+            didRun = YES;
+            swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
+            swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
 
-    swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
-    swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
 
-
-    swipeDelegate.backPlacard.userInteractionEnabled = YES;
-    UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS_handlepan:)];
-    panRecognizer.maximumNumberOfTouches = 1;
-    [panRecognizer setDelegate:swipeDelegate];
-    // [panRecognizer _setHysteresis: 50.0];
-    [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
-    [panRecognizer release];
-    // now add the previews to the backPlacard
-    [swipeDelegate addPreviews];
+            swipeDelegate.backPlacard.userInteractionEnabled = YES;
+            UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS7_handlepan:)];
+            panRecognizer.maximumNumberOfTouches = 1;
+            [panRecognizer setDelegate:swipeDelegate];
+            // [panRecognizer _setHysteresis: 50.0];
+            [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
+            [panRecognizer release];
+            // now add the previews to the backPlacard
+            [swipeDelegate addPreviews];
+        }
+    }
 }
 
 // - (id)initWithNavigationController:(id)arg1 {
 //     id r = %orig;
+
 
 //     return r;
 // }
@@ -72,7 +77,7 @@ static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 
 
 
-// %hook CKMessagesController
+%hook CKMessagesController
 //
 // - (id)currentConversation { %log; id r = %orig; NSLog(@" = %@", r); return r; }
 // // - (void)setPrimaryNavigationController:(id)fp8 { %log; %orig; }
@@ -116,7 +121,29 @@ static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 // - (void)_popToConversationListAndPerformBlockAnimated:(BOOL)fp8 block:(id)fp { %log; %orig; }
 // // - (void)_presentNewMessageCompositionPanel:(id)fp8 animated:(BOOL)fp12 { %log; %orig; }
 
-// - (void)setCurrentConversation:(id)fp8 { %log; %orig; }
+- (void)setCurrentConversation:(id)convo {
+    if (convo != nil) {
+        // is in conversation
+        swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
+        swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
+
+
+        swipeDelegate.backPlacard.userInteractionEnabled = YES;
+        UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS_handlepan:)];
+        panRecognizer.maximumNumberOfTouches = 1;
+        [panRecognizer setDelegate:swipeDelegate];
+        // [panRecognizer _setHysteresis: 50.0];
+        [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
+        [panRecognizer release];
+        // now add the previews to the backPlacard
+        [swipeDelegate addPreviews];
+        swipeDelegate.isInConvo = YES;
+    } else {
+        swipeDelegate.isInConvo = NO;
+    }
+    %orig;
+
+}
 
 // - (void)navigationController:(id)fp8 didShowViewController:(id)fp12 animated:(BOOL)fp16 { %log; %orig; }
 // - (void)navigationController:(id)fp8 willShowViewController:(id)fp12 animated:(BOOL)fp16 { %log; %orig; }
@@ -131,4 +158,4 @@ static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 // // - (void)parentControllerDidBecomeActive { %log; %orig; }
 // // - (void)parentControllerDidResume:(BOOL)fp8 animating:(BOOL)fp12 { %log; %orig; }
 // - (id)init { %log; id r = %orig; NSLog(@" = %@", r); return r; }
-// %end
+%end
