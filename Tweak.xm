@@ -36,10 +36,10 @@ static BOOL didRun = NO;
 
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
-    if (!didRun) {
-        swipeDelegate.backPlacard = self.view.superview;
+    swipeDelegate.backPlacard = self.view.superview;
 
-        if (swipeDelegate.backPlacard) {
+    if (swipeDelegate.backPlacard) {
+        if (!didRun) {
             didRun = YES;
             swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
             swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
@@ -55,6 +55,7 @@ static BOOL didRun = NO;
             // now add the previews to the backPlacard
             [swipeDelegate addPreviews];
         }
+        [swipeDelegate addPreviews];
     }
 }
 

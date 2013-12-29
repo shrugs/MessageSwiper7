@@ -10,7 +10,7 @@
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
-    // CGPoint originalLocation;
+
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         // reset the previews just in case they're still animating
         [self.backPlacard.layer removeAllAnimations];
@@ -20,10 +20,8 @@
         NSLog(@"BEGAN SHIT");
     }
 
-    // NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
-    // NSLog(@"%@", NSStringFromCGPoint(self.rightPreview.center));
 
-    // now move both of the views max(translation, 120)
+    // now move both of the views
     int translation = [recognizer translationInView:recognizer.view].x;
     NSLog(@"%i", translation);
 
@@ -39,9 +37,9 @@
         NSLog(@"ENDED SHIT");
         [self resetPreviewsAnimated:YES];
     }
-
     NSLog(@"%@", NSStringFromCGPoint(self.leftPreview.center));
     NSLog(@"%f", self.leftPreview.alpha);
+
 
 }
 
@@ -51,7 +49,6 @@
         self.isInConvo = NO;
         self.leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
         self.rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
-        // [self.leftPreview setBackgroundColor: [UIColor blueColor]];
     }
     return self;
 }
@@ -88,10 +85,10 @@
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
     // If we're on the converstion list page, don't worry about touches
-    if (!self.isInConvo) {
-        NSLog(@"Not in convo, ignoring...");
-        return NO;
-    }
+    // if (!self.isInConvo) {
+    //     NSLog(@"Not in convo, ignoring...");
+    //     return NO;
+    // }
 
     BOOL detectCenter = NO;
     int edgePercent = 20; //%
@@ -103,14 +100,14 @@
     float edgeSize = (edgePercent/100.0)*w;
 
     if (detectCenter && (coord.x > edgeSize) && (coord.x < w-edgeSize)) {
-        NSLog(@"CENTER");
+        NSLog(@"ACCEPTED");
         return YES;
     }
     if (!detectCenter && ((coord.x < edgeSize) || (coord.x > w-edgeSize))) {
-        NSLog(@"NOT CENTER");
+        NSLog(@"ACCEPTED");
         return YES;
     }
-    NSLog(@"NONE");
+    NSLog(@"NOT ACCEPTED");
     return NO;
 }
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
