@@ -124,23 +124,23 @@ static BOOL didRun = NO;
 
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
+    %log;
     %orig;
     // swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
 
     // if (didRun) {
     //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
     // }
-    // NSLog(@"TESTING");
 
     // NSLog(@"%@", swipeDelegate);
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
+    %log;
     %orig;
     // swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
     // if (didRun) {
     //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
     // }
-    // NSLog(@"TESTING");
 }
 
 // END PROBLEM
