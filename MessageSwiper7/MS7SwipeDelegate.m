@@ -7,6 +7,8 @@
 @synthesize rightPreview = _rightPreview;
 @synthesize convos= _convos;
 @synthesize currentConvoIndex = _currentConvoIndex;
+@synthesize wrapAroundEnabled = _wrapAroundEnabled;
+@synthesize ckMessagesController= _ckMessagesController;
 
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
@@ -44,6 +46,34 @@
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
         NSLog(@"ENDED SHIT");
+        int nextConvoIndex = 0;
+        if (leftTriggered) {
+            // swiped to left, so -1
+            nextConvoIndex = self.currentConvoIndex - 1;
+            if (self.currentConvoIndex == 0) {
+                if (self.wrapAroundEnabled) {
+                    nextConvoIndex = [self.convos count] - 1 ;
+                } else {
+                    nextConvoIndex = 0;
+                    //maybe show bounce animation here
+                }
+            }
+        }
+        if (rightTriggered) {
+            nextConvoIndex = self.currentConvoIndex + 1;
+            if (nextConvoIndex >= [self.convos count]) {
+                if (self.wrapAroundEnabled) {
+                    nextConvoIndex = 0;
+                } else {
+                    nextConvoIndex = self.currentConvoIndex;
+                    //maybe show bounce animation here
+                }
+            }
+        }
+
+        // now present the user with the next conversation, possibly with a nice sliding animation?
+        [self.ckMessagesController showConversation:[self.convos objectAtIndex:nextConvoIndex] animate:YES];
+
         [self resetPreviewsAnimated:YES];
     }
 

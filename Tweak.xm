@@ -7,8 +7,7 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptCollectionView.h>
 
 
-// Messages imports
-// #import "MobileSMS/CKMessagesController.h"
+
 
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
@@ -170,5 +169,11 @@ static BOOL didRun = NO;
 // // - (void)loadView { %log; %orig; }
 // // - (void)parentControllerDidBecomeActive { %log; %orig; }
 // // - (void)parentControllerDidResume:(BOOL)fp8 animating:(BOOL)fp12 { %log; %orig; }
-// - (id)init { %log; id r = %orig; NSLog(@" = %@", r); return r; }
+- (id)init {
+    id r = %orig;
+
+    swipeDelegate.ckMessagesController = self;
+
+    return r;
+}
 %end
