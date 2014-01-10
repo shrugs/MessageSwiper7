@@ -23,7 +23,7 @@ static BOOL didRun = NO;
 static BOOL wrapAroundEnabled = YES;
 static CKMessagesController *ckMessagesController = nil;
 static UIView *backPlacard = nil;
-static NSMutableArray *convos;
+static NSMutableArray *convos = [[NSMutableArray alloc] init];
 static int currentConvoIndex = 0;
 
 
@@ -184,9 +184,6 @@ MS7SwipeDelegate
     if (self) {
         leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
         rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
-        convos = [[NSMutableArray alloc] init];
-        NSLog(@"PAY ATTENTION TO ME PLS");
-        NSLog(@"%@", convos);
     }
     return self;
 }
@@ -321,60 +318,42 @@ static MS7SwipeDelegate *swipeDelegate;
 
     // left a conversation? update the list
     %orig;
-    // if (didRun) {
-    //     convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    // }
+    convos = [[%c(CKConversationList) sharedConversationList] conversations];
 }
 
 
 // PROBLEM
 
-// - (BOOL)resumeToConversation:(id)fp8 {
+- (BOOL)resumeToConversation:(id)fp8 {
 
-//     // if (didRun) {
-//     //     currentConvoIndex = [convos indexOfObject: fp8];
-//     // }
-//     // NSLog(@"TESTING");
+    currentConvoIndex = [convos indexOfObject: fp8];
 
-//     return %orig;
-// }
+    return %orig;
+}
 
 
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
     %log;
     %orig;
-    // convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    convos = [[%c(CKConversationList) sharedConversationList] conversations];
 
-    // if (didRun) {
-    //     currentConvoIndex = [convos indexOfObject: fp8];
-    // }
-
-    // NSLog(@"%@", swipeDelegate);
+    currentConvoIndex = [convos indexOfObject: fp8];
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
     %log;
     %orig;
-    // convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    // if (didRun) {
-    //     currentConvoIndex = [convos indexOfObject: fp8];
-    // }
+    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    currentConvoIndex = [convos indexOfObject: fp8];
 }
 
 // END PROBLEM
 
-// - (void)setCurrentConversation:(id)convo {
-//     %orig;
-
-// }
-
-- (id)init {
-    id r = %orig;
-
-    // ckMessagesController = self;
-
-    return r;
+- (void)setCurrentConversation:(id)convo {
+    %log;
+    %orig;
 }
+
 %end
 
 // %hook CKConversation
