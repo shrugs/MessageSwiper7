@@ -23,10 +23,13 @@
 #define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
 
 
+%group Messages
 
 #pragma mark - STATICS
 static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 static BOOL didRun = NO;
+static BOOL test = YES;
+static wrapAroundEnabled = YES;
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
@@ -201,3 +204,42 @@ static BOOL didRun = NO;
 // }
 
 // %end
+
+%end
+
+%ctor {
+
+   //init prefs again
+    NSDictionary *preferences = [[NSDictionary alloc] initWithContentsOfFile:PrefPath];
+    BOOL globalEnable = YES;
+    if (preferences) {
+        //if the option exists make it that, else default
+        if ([preferences valueForKey:@"globalEnable"] != nil) {
+            globalEnable = [[preferences valueForKey:@"globalEnable"] boolValue];
+        } else {
+            globalEnable = YES;
+        }
+        if ([preferences valueForKey:@"wrapAroundEnabled"] != nil) {
+            wrapAroundEnabled = [[preferences valueForKey:@"wrapAroundEnabled"] boolValue];
+        } else {
+            wrapAroundEnabled = NO;
+        }
+    }
+    [preferences release];
+
+    if (globalEnable) {
+        %init(Messages);
+        // %init(WhatsAppStuff);
+    }
+
+
+    // [tempglobalEnable release];
+    // [tempcustomSwipeSettings release];
+
+    // if(something) %init(HelloWorld); //This makes the hello world group functional based on an if statement, just for code management.
+    //make a group for WhatsApp and only init if WhatsApp is running or something
+    //after making this,
+    //also possibly make group for iOS5 to stop crashes
+    //determine if the app is WhatsApp
+    //NSString *bundleIdentifier = [NSBundle mainBundle].bundleIdentifier;
+}

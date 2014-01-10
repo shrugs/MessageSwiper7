@@ -83,6 +83,7 @@
 -(id)init {
     self = [super init];
     if (self) {
+        NSLog(@"TEST ?   %@", test?@"YES":@"NO" );
         self.leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
         self.rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
         self.wrapAroundEnabled = YES;
