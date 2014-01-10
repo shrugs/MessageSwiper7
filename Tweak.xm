@@ -137,7 +137,7 @@ MS7SwipeDelegate
         [backPlacard.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
         leftPreview.alpha = 1.0;
-        leftPreview.alpha = 1.0;
+        rightPreview.alpha = 1.0;
         // NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
@@ -224,6 +224,7 @@ MS7SwipeDelegate
         [rightPreview setCenter:CGPointMake(backPlacard.frame.size.width+60, height)];
         leftPreview.alpha = 1.0;
         rightPreview.alpha = 1.0;
+
     } else {
         // animate to default positions.
         [UIView animateWithDuration:0.4
