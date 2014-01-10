@@ -25,7 +25,9 @@ static CKMessagesController *ckMessagesController = nil;
 static UIView *backPlacard = nil;
 static NSMutableArray *convos = [[NSMutableArray alloc] init];
 static int currentConvoIndex = 0;
-
+static BOOL leftTriggered = NO;
+static BOOL rightTriggered = NO;
+static CKTranscriptController *cKTranscriptController = nil;
 
 /*
 
@@ -112,16 +114,13 @@ MS7SwipeDelegate
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
-
-    static BOOL leftTriggered;
-    static BOOL rightTriggered;
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         // reset the previews just in case they're still animating
         [backPlacard.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
         leftPreview.alpha = 1.0f;
         leftPreview.alpha = 1.0f;
-        NSLog(@"BEGAN SHIT");
+        // NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
     }
@@ -129,7 +128,7 @@ MS7SwipeDelegate
 
     // now move both of the views
     int translation = [recognizer translationInView:recognizer.view].x;
-    NSLog(@"%i", translation);
+    // NSLog(@"%i", translation);
 
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
@@ -144,7 +143,7 @@ MS7SwipeDelegate
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"ENDED SHIT");
+        // NSLog(@"ENDED SHIT: %@", (leftTriggered||rightTriggered)?@"YES":@"NO");
         int nextConvoIndex = 0;
         if (leftTriggered) {
             // swiped to left, so -1
@@ -171,7 +170,9 @@ MS7SwipeDelegate
         }
 
         // now present the user with the next conversation, possibly with a nice sliding animation?
-        [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
+        if (leftTriggered || rightTriggered) {
+            [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
+        }
 
         [self resetPreviewsAnimated:YES];
     }
@@ -196,9 +197,13 @@ MS7SwipeDelegate
 }
 
 -(void)resetPreviewsAnimated:(BOOL)shouldAnimate {
+    int height = 70+80;
+    if ([cKTranscriptController _isGroupMessage]) {
+        height = 70+80+44;
+    }
     if (!shouldAnimate) {
-        [leftPreview setCenter:CGPointMake(-60,70+80)];
-        [rightPreview setCenter:CGPointMake(backPlacard.frame.size.width+60,70+80)];
+        [leftPreview setCenter:CGPointMake(-60, height)];
+        [rightPreview setCenter:CGPointMake(backPlacard.frame.size.width+60, height)];
         leftPreview.alpha = 1.0;
         rightPreview.alpha = 1.0;
     } else {
@@ -207,12 +212,16 @@ MS7SwipeDelegate
                               delay:0.0
                             options: UIViewAnimationOptionCurveEaseOut
                          animations:^{
-                            leftPreview.center = CGPointMake(-60, 70+80);
-                            rightPreview.center = CGPointMake(backPlacard.frame.size.width+60, 70+80);
+                            leftPreview.center = CGPointMake(-60, leftPreview.center.y);
+                            rightPreview.center = CGPointMake(backPlacard.frame.size.width+60, leftPreview.center.y);
                             leftPreview.alpha = 0;
                             rightPreview.alpha = 0;
                          }
-                         completion:nil];
+                         completion:^(BOOL finished){
+                            // if (finished) {
+                            //     [self resetPreviewsAnimated:NO];
+                            // }
+                         }];
     }
 }
 
@@ -279,6 +288,7 @@ static MS7SwipeDelegate *swipeDelegate;
     if (backPlacard) {
         if (!didRun) {
             didRun = YES;
+            cKTranscriptController = self;
             swipeDelegate = [[MS7SwipeDelegate alloc] init];
 
             backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
@@ -291,7 +301,7 @@ static MS7SwipeDelegate *swipeDelegate;
             [panRecognizer setDelegate:swipeDelegate];
             // [panRecognizer _setHysteresis: 50.0];
             [backPlacard addGestureRecognizer: panRecognizer];
-            // [panRecognizer release]; //CAUSES SAFE MODE WTF
+            [panRecognizer release]; //CAUSES SAFE MODE WTF
             // now add the previews to the backPlacard
             [swipeDelegate addPreviews];
 
@@ -321,12 +331,9 @@ static MS7SwipeDelegate *swipeDelegate;
     convos = [[%c(CKConversationList) sharedConversationList] conversations];
 }
 
-
-// PROBLEM
-
 - (BOOL)resumeToConversation:(id)fp8 {
 
-    currentConvoIndex = [convos indexOfObject: fp8];
+    currentConvoIndex = [convos indexOfObject:fp8];
 
     return %orig;
 }
@@ -335,23 +342,23 @@ static MS7SwipeDelegate *swipeDelegate;
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
     %log;
-    %orig;
     convos = [[%c(CKConversationList) sharedConversationList] conversations];
-
-    currentConvoIndex = [convos indexOfObject: fp8];
+    currentConvoIndex = [convos indexOfObject:fp8];
+    %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
     %log;
-    %orig;
     convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    currentConvoIndex = [convos indexOfObject: fp8];
+    currentConvoIndex = [convos indexOfObject:fp8];
+    %orig;
 }
 
-// END PROBLEM
+- (id)init {
+    id r = %orig;
 
-- (void)setCurrentConversation:(id)convo {
-    %log;
-    %orig;
+    ckMessagesController = r;
+
+    return r;
 }
 
 %end
