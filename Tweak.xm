@@ -41,6 +41,7 @@ MS7ConvoPreview
 @property (assign) NSString *mostRecentMessage;
 @property (assign) UILabel *nameLabel;
 @property (assign) UILabel *messageLabel;
+@property (retain, nonatomic) CKBlurView *blurredPreview;
 
 - (void)setConversation:(CKConversation *)convo;
 
@@ -52,6 +53,7 @@ MS7ConvoPreview
 @synthesize mostRecentMessage = _mostRecentMessage;
 @synthesize nameLabel = _nameLabel;
 @synthesize messageLabel = _messageLabel;
+@synthesize blurredPreview = _blurredPreview;
 
 - (void)setConversation:(CKConversation *)convo
 {
@@ -62,8 +64,11 @@ MS7ConvoPreview
 }
 
 - (void)baseInit {
+    self.blurredPreview = [[CKBlurView alloc] initWithFrame: self.frame];
+    self.blurredPreview.blurRadius = 10.0f;
+    self.blurredPreview.blurCroppingRect = self.blurredPreview.frame;
     [self setUserInteractionEnabled: NO];
-    [self setBackgroundColor: [UIColor blueColor]];
+    // [self setBackgroundColor: [UIColor blueColor]];
 
     self.contactName = @"Unknown - Error";
     self.mostRecentMessage = @"Error Retrieving Message.";
@@ -73,8 +78,10 @@ MS7ConvoPreview
     self.messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(10,10+50+10,100,80)];
     [self.nameLabel setBackgroundColor: [UIColor redColor]];
     [self.messageLabel setBackgroundColor: [UIColor redColor]];
-    [self addSubview: self.nameLabel];
-    [self addSubview: self.messageLabel];
+
+    [self addSubview:self.blurredPreview];
+    // [self.blurredPreview addSubview: self.nameLabel];
+    // [self.blurredPreview addSubview: self.messageLabel];
     self.alpha = 0;
 
 }
