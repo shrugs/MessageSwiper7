@@ -8,6 +8,8 @@ TWEAK_NAME = MessageSwiper7
 MessageSwiper7_FILES = Tweak.xm
 MessageSwiper7_FRAMEWORKS = UIKit QuartzCore Foundation CoreGraphics
 
+THEOS_BUILD_DIR = debs
+
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::

@@ -301,7 +301,7 @@ static MS7SwipeDelegate *swipeDelegate;
             [panRecognizer setDelegate:swipeDelegate];
             // [panRecognizer _setHysteresis: 50.0];
             [backPlacard addGestureRecognizer: panRecognizer];
-            [panRecognizer release]; //CAUSES SAFE MODE WTF
+            [panRecognizer release];
             // now add the previews to the backPlacard
             [swipeDelegate addPreviews];
 
@@ -341,13 +341,13 @@ static MS7SwipeDelegate *swipeDelegate;
 
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
-    %log;
+    // %log;
     convos = [[%c(CKConversationList) sharedConversationList] conversations];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
-    %log;
+    // %log;
     convos = [[%c(CKConversationList) sharedConversationList] conversations];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
