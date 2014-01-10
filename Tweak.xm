@@ -6,7 +6,7 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKGradientReferenceView.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptCollectionView.h>
 
-
+// Messages Imports
 #import "MobileSMS/CKMessagesController.h"
 
 // UIKit imports
@@ -15,20 +15,259 @@
 
 // #import <substrate.h>
 
-#import "MessageSwiper7/MS7SwipeDelegate.h"
-#import "MessageSwiper7/MS7ConvoPreview.h"
-
-
 // PREFERENCES
 #define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
 
-
-%group Messages
-
-#pragma mark - STATICS
-static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
+static MS7SwipeDelegate *swipeDelegate;
 static BOOL didRun = NO;
 static BOOL wrapAroundEnabled = YES;
+static CKMessagesController *ckMessagesController = nil;
+static UIView *backPlacard = nil;
+static MS7ConvoPreview *leftPreview;
+static MS7ConvoPreview *rightPreview;
+static NSMutableArray *convos;
+static int currentConvoIndex = 0;
+
+
+/*
+
+
+MS7ConvoPreview
+*/
+@interface MS7ConvoPreview : UIView
+
+@property (assign) NSString *contactName;
+@property (assign) NSString *mostRecentMessage;
+@property (assign) UILabel *nameLabel;
+@property (assign) UILabel *messageLabel;
+
+- (void)setConversation:(CKConversation *)convo;
+
+@end
+
+@implementation MS7ConvoPreview
+
+@synthesize contactName = _contactName;
+@synthesize mostRecentMessage = _mostRecentMessage;
+@synthesize nameLabel = _nameLabel;
+@synthesize messageLabel = _messageLabel;
+
+- (void)setConversation:(CKConversation *)convo
+{
+    self.contactName = [convo name];
+    //would set mostRecentMessage here
+    self.mostRecentMessage = [[convo latestMessage] previewText]; //returns CKIMMessage => NSString
+
+}
+
+- (void)baseInit {
+    [self setUserInteractionEnabled: NO];
+    [self setBackgroundColor: [UIColor blueColor]];
+
+    self.contactName = @"Unknown - Error";
+    self.mostRecentMessage = @"Error Retrieving Message.";
+
+    // now create the labels and add them to the blurred view
+    self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, 100, 55)];
+    self.messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(10,10+50+10,100,80)];
+    [self.nameLabel setBackgroundColor: [UIColor redColor]];
+    [self.messageLabel setBackgroundColor: [UIColor redColor]];
+    [self addSubview: self.nameLabel];
+    [self addSubview: self.messageLabel];
+    self.alpha = 0;
+
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self baseInit];
+    }
+    return self;
+}
+
+@end
+
+/*
+END MS7ConvoPreview
+
+
+*/
+
+/*
+
+
+MS7SwipeDelegate
+*/
+@interface MS7SwipeDelegate : NSObject <UIGestureRecognizerDelegate>
+
+-(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer;
+-(void)addPreviews;
+
+@end
+
+@implementation MS7SwipeDelegate
+
+
+-(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
+{
+
+    static BOOL leftTriggered;
+    static BOOL rightTriggered;
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        // reset the previews just in case they're still animating
+        [backPlacard.layer removeAllAnimations];
+        [self resetPreviewsAnimated:NO];
+        leftPreview.alpha = 1.0f;
+        leftPreview.alpha = 1.0f;
+        NSLog(@"BEGAN SHIT");
+        leftTriggered = NO;
+        rightTriggered = NO;
+    }
+
+
+    // now move both of the views
+    int translation = [recognizer translationInView:recognizer.view].x;
+    NSLog(@"%i", translation);
+
+    // Move both previews
+    // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
+    int newX = (int) -60+translation;
+    [leftPreview setCenter:CGPointMake(MIN(60, newX), leftPreview.center.y)];
+    leftTriggered = leftPreview.center.x == 60;
+
+
+    newX = (int) backPlacard.frame.size.width+60+translation;
+    [rightPreview setCenter:CGPointMake(MAX(backPlacard.frame.size.width-60, newX), rightPreview.center.y)];
+    rightTriggered = rightPreview.center.x == backPlacard.frame.size.width-60;
+
+
+    if (recognizer.state == UIGestureRecognizerStateEnded) {
+        NSLog(@"ENDED SHIT");
+        int nextConvoIndex = 0;
+        if (leftTriggered) {
+            // swiped to left, so -1
+            nextConvoIndex = currentConvoIndex - 1;
+            if (currentConvoIndex == 0) {
+                if (wrapAroundEnabled) {
+                    nextConvoIndex = [convos count] - 1 ;
+                } else {
+                    nextConvoIndex = 0;
+                    //maybe show bounce animation here
+                }
+            }
+        }
+        if (rightTriggered) {
+            nextConvoIndex = currentConvoIndex + 1;
+            if (nextConvoIndex >= [convos count]) {
+                if (wrapAroundEnabled) {
+                    nextConvoIndex = 0;
+                } else {
+                    nextConvoIndex = currentConvoIndex;
+                    //maybe show bounce animation here
+                }
+            }
+        }
+
+        // now present the user with the next conversation, possibly with a nice sliding animation?
+        [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
+
+        [self resetPreviewsAnimated:YES];
+    }
+
+
+}
+
+-(id)init {
+    self = [super init];
+    if (self) {
+        leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
+        rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
+        convos = [[NSMutableArray alloc] init];
+        NSLog(@"PAY ATTENTION TO ME PLS");
+        NSLog(@"%@", convos);
+    }
+    return self;
+}
+
+-(void)addPreviews {
+    [backPlacard addSubview: leftPreview];
+    [backPlacard addSubview: rightPreview];
+    [self resetPreviewsAnimated: NO];
+
+}
+
+-(void)resetPreviewsAnimated:(BOOL)shouldAnimate {
+    if (!shouldAnimate) {
+        [leftPreview setCenter:CGPointMake(-60,70+80)];
+        [rightPreview setCenter:CGPointMake(backPlacard.frame.size.width+60,70+80)];
+        leftPreview.alpha = 1.0;
+        rightPreview.alpha = 1.0;
+    } else {
+        // animate to default positions.
+        [UIView animateWithDuration:0.4
+                              delay:0.0
+                            options: UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                            leftPreview.center = CGPointMake(-60, 70+80);
+                            rightPreview.center = CGPointMake(backPlacard.frame.size.width+60, 70+80);
+                            leftPreview.alpha = 0;
+                            rightPreview.alpha = 0;
+                         }
+                         completion:nil];
+    }
+}
+
+//delegate methods
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+
+    BOOL detectCenter = NO;
+    int edgePercent = 20; //%
+
+    // Get the touch's location in the backPlacard view
+    // if between the bounds we care about, return yes, else, no
+    CGPoint coord = [touch locationInView: backPlacard];
+    float w = backPlacard.frame.size.width;
+    float edgeSize = (edgePercent/100.0)*w;
+
+    if (detectCenter && (coord.x > edgeSize) && (coord.x < w-edgeSize)) {
+        NSLog(@"ACCEPTED");
+        return YES;
+    }
+    if (!detectCenter && ((coord.x < edgeSize) || (coord.x > w-edgeSize))) {
+        NSLog(@"ACCEPTED");
+        return YES;
+    }
+    NSLog(@"NOT ACCEPTED");
+    return NO;
+}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
+}
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+    return YES;
+}
+@end
+/*
+END MS7SwipeDelegate
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+%group Messages
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
@@ -37,24 +276,26 @@ static BOOL wrapAroundEnabled = YES;
 
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
-    swipeDelegate.backPlacard = self.view.superview;
+    backPlacard = view.superview;
 
 
 
-    if (swipeDelegate.backPlacard) {
+    if (backPlacard) {
         if (!didRun) {
             didRun = YES;
-            swipeDelegate.wrapAroundEnabled = wrapAroundEnabled;
-            swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
-            swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
+            swipeDelegate = [[MS7SwipeDelegate alloc] init];
+
+            wrapAroundEnabled = wrapAroundEnabled;
+            backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
+            backPlacard.layer.borderWidth = 3.0f;
 
 
-            swipeDelegate.backPlacard.userInteractionEnabled = YES;
+            backPlacard.userInteractionEnabled = YES;
             UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS7_handlepan:)];
             panRecognizer.maximumNumberOfTouches = 1;
             [panRecognizer setDelegate:swipeDelegate];
             // [panRecognizer _setHysteresis: 50.0];
-            [swipeDelegate.backPlacard addGestureRecognizer: panRecognizer];
+            [backPlacard addGestureRecognizer: panRecognizer];
             // [panRecognizer release]; //CAUSES SAFE MODE WTF
             // now add the previews to the backPlacard
             [swipeDelegate addPreviews];
@@ -64,12 +305,6 @@ static BOOL wrapAroundEnabled = YES;
     }
 }
 
-// - (id)initWithNavigationController:(id)arg1 {
-//     id r = %orig;
-
-
-//     return r;
-// }
 
 
 %end
@@ -84,31 +319,14 @@ static BOOL wrapAroundEnabled = YES;
 
 
 %hook CKMessagesController
-//
-// - (id)currentConversation { %log; id r = %orig; NSLog(@" = %@", r); return r; }
-// // - (void)setPrimaryNavigationController:(id)fp8 { %log; %orig; }
-// // - (id)primaryNavigationController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
-// - (void)setTranscriptController:(id)fp8 { %log; %orig; }
-// - (void)setConversationListController:(id)fp8 { %log; %orig; }
-// // - (void)mailComposeController:(id)fp8 didFinishWithResult:(int)fp12 error:(id)fp16 { %log; %orig; }
-// // - (void)showMailComposeSheetForAddress:(id)fp8 { %log; %orig; }
-// // - (void)_showMailComposeSheet { %log; %orig; }
-// // - (void)showNewMessageCompositionForMessageParts:(id)fp8 { %log; %orig; }
 - (void)_conversationLeft:(id)fp8 {
 
     // left a conversation? update the list
     %orig;
     // if (didRun) {
-    //     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    //     convos = [[%c(CKConversationList) sharedConversationList] conversations];
     // }
 }
-// // - (void)_handleConversationBecameStale:(id)fp8 { %log; %orig; }
-
-
-// - (BOOL)isShowingTranscriptWithUnsentText { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
-// - (BOOL)showUnreadConversationsWithLastConversation:(id)fp8 ignoringMessages:(id)fp12 { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
-// - (BOOL)hasUnreadFilteredConversationsIgnoringMessages:(id)fp8 { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
-// - (void)showConversationList:(BOOL)fp8 { %log; %orig; }
 
 
 // PROBLEM
@@ -116,7 +334,7 @@ static BOOL wrapAroundEnabled = YES;
 // - (BOOL)resumeToConversation:(id)fp8 {
 
 //     // if (didRun) {
-//     //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+//     //     currentConvoIndex = [convos indexOfObject: fp8];
 //     // }
 //     // NSLog(@"TESTING");
 
@@ -128,10 +346,10 @@ static BOOL wrapAroundEnabled = YES;
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
     %log;
     %orig;
-    // swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    // convos = [[%c(CKConversationList) sharedConversationList] conversations];
 
     // if (didRun) {
-    //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+    //     currentConvoIndex = [convos indexOfObject: fp8];
     // }
 
     // NSLog(@"%@", swipeDelegate);
@@ -139,38 +357,13 @@ static BOOL wrapAroundEnabled = YES;
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
     %log;
     %orig;
-    // swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    // convos = [[%c(CKConversationList) sharedConversationList] conversations];
     // if (didRun) {
-    //     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject: fp8];
+    //     currentConvoIndex = [convos indexOfObject: fp8];
     // }
 }
 
 // END PROBLEM
-
-
-
-
-// // - (void)showConversationAndMessageForSearchURL:(id)fp8 { %log; %orig; }
-// // - (void)showConversationAndMessageForChatGUID:(id)fp8 messageGUID:(id)fp12 animate:(BOOL)fp16 { %log; %orig; }
-
-// - (id)transcriptController { %log; id r = %orig; NSLog(@" = %@", r); return r; }
-// // - (BOOL)isShowingTranscriptController { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
-// // - (BOOL)isShowingConversationListController { %log; BOOL r = %orig; NSLog(@" = %d", r); return r; }
-// - (void)_showTranscriptController:(BOOL)fp8 { %log; %orig; }
-// - (void)_showTranscriptController:(BOOL)fp8 animated:(BOOL)fp12 { %log; %orig; }
-
-// - (void)transcriptController:(id)fp8 didSelectNewConversation:(id)fp12 { %log; %orig; }
-
-// - (void)transcriptController:(id)fp8 didSendMessageInConversation:(id)fp12 { %log; %orig; }
-// // - (void)transcriptController:(id)fp8 willSendComposition:(id)fp12 inConversation:(id)fp16 { %log; %orig; }
-// // - (void)didCancelComposition:(id)fp8 { %log; %orig; }
-
-// // - (void)cancelNewMessageComposition { %log; %orig; }
-// // - (void)hideNewMessageCompositionPanel { %log; %orig; }
-// // - (void)showNewMessageCompositionPanelAnimated:(BOOL)fp8 { %log; %orig; }
-// // - (void)showNewMessageCompositionPanelWithRecipients:(id)fp8 composition:(id)fp12 animated:(BOOL)fp16 { %log; %orig; }
-// - (void)_popToConversationListAndPerformBlockAnimated:(BOOL)fp8 block:(id)fp { %log; %orig; }
-// // - (void)_presentNewMessageCompositionPanel:(id)fp8 animated:(BOOL)fp12 { %log; %orig; }
 
 // - (void)setCurrentConversation:(id)convo {
 //     %orig;
@@ -180,7 +373,7 @@ static BOOL wrapAroundEnabled = YES;
 - (id)init {
     id r = %orig;
 
-    // swipeDelegate.ckMessagesController = self;
+    // ckMessagesController = self;
 
     return r;
 }
@@ -190,14 +383,14 @@ static BOOL wrapAroundEnabled = YES;
 
 // - (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2
 // {
-//     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
-//     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject:self];
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     currentConvoIndex = [convos indexOfObject:self];
 //     %orig;
 // }
 // - (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3
 // {
-//     swipeDelegate.convos = [[%c(CKConversationList) sharedConversationList] conversations];
-//     swipeDelegate.currentConvoIndex = [swipeDelegate.convos indexOfObject:self];
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     currentConvoIndex = [convos indexOfObject:self];
 //     %orig;
 
 // }
