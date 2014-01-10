@@ -28,8 +28,7 @@
 #pragma mark - STATICS
 static MS7SwipeDelegate *swipeDelegate = [[MS7SwipeDelegate alloc] init];
 static BOOL didRun = NO;
-static BOOL test = YES;
-static wrapAroundEnabled = YES;
+static BOOL wrapAroundEnabled = YES;
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
@@ -45,7 +44,7 @@ static wrapAroundEnabled = YES;
     if (swipeDelegate.backPlacard) {
         if (!didRun) {
             didRun = YES;
-
+            swipeDelegate.wrapAroundEnabled = wrapAroundEnabled;
             swipeDelegate.backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
             swipeDelegate.backPlacard.layer.borderWidth = 3.0f;
 
@@ -207,9 +206,7 @@ static wrapAroundEnabled = YES;
 
 %end
 
-%ctor {
-
-   //init prefs again
+static void MS7UpdatePreferences() {
     NSDictionary *preferences = [[NSDictionary alloc] initWithContentsOfFile:PrefPath];
     BOOL globalEnable = YES;
     if (preferences) {
@@ -225,21 +222,27 @@ static wrapAroundEnabled = YES;
             wrapAroundEnabled = NO;
         }
     }
-    [preferences release];
+}
+
+static void reloadPrefsNotification(CFNotificationCenterRef center,
+                    void *observer,
+                    CFStringRef name,
+                    const void *object,
+                    CFDictionaryRef userInfo) {
+    stacksUpdatePreferences();
+}
+
+[preferences release];
+%ctor {
+
+   //init prefs again
+    MS7UpdatePreferences();
+    CFNotificationCenterRef reload = CFNotificationCenterGetDarwinNotifyCenter();
+    CFNotificationCenterAddObserver(reload, NULL, &reloadPrefsNotification,
+                    CFSTR("com.mattcmultimedia.stacks/reload"), NULL, 0);
 
     if (globalEnable) {
         %init(Messages);
         // %init(WhatsAppStuff);
     }
-
-
-    // [tempglobalEnable release];
-    // [tempcustomSwipeSettings release];
-
-    // if(something) %init(HelloWorld); //This makes the hello world group functional based on an if statement, just for code management.
-    //make a group for WhatsApp and only init if WhatsApp is running or something
-    //after making this,
-    //also possibly make group for iOS5 to stop crashes
-    //determine if the app is WhatsApp
-    //NSString *bundleIdentifier = [NSBundle mainBundle].bundleIdentifier;
 }
