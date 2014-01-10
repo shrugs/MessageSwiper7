@@ -12,6 +12,7 @@
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
 #import <iOS7/Frameworks/UIKit/UIView.h>
+#import "CKBlurView.h"
 
 // #import <substrate.h>
 
