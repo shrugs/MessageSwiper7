@@ -12,7 +12,6 @@
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
 #import <iOS7/Frameworks/UIKit/UIView.h>
-#import "CKBlurView.h"
 
 // #import <substrate.h>
 
@@ -41,7 +40,7 @@ MS7ConvoPreview
 @property (assign) NSString *mostRecentMessage;
 @property (assign) UILabel *nameLabel;
 @property (assign) UILabel *messageLabel;
-@property (retain, nonatomic) CKBlurView *blurredPreview;
+@property (nonatomic, retain) UIToolbar *fakeBar;
 
 - (void)setConversation:(CKConversation *)convo;
 
@@ -53,7 +52,7 @@ MS7ConvoPreview
 @synthesize mostRecentMessage = _mostRecentMessage;
 @synthesize nameLabel = _nameLabel;
 @synthesize messageLabel = _messageLabel;
-@synthesize blurredPreview = _blurredPreview;
+@synthesize fakeBar = _fakeBar;
 
 - (void)setConversation:(CKConversation *)convo
 {
@@ -64,24 +63,35 @@ MS7ConvoPreview
 }
 
 - (void)baseInit {
-    self.blurredPreview = [[CKBlurView alloc] initWithFrame: self.frame];
-    self.blurredPreview.blurRadius = 10.0f;
-    self.blurredPreview.blurCroppingRect = self.blurredPreview.frame;
+    // self.blurredPreview = [[CKBlurView alloc] initWithFrame:self.frame];
+    // self.blurredPreview.blurRadius = 10.0f;
+    // self.blurredPreview.blurCroppingRect = self.blurredPreview.frame;
     [self setUserInteractionEnabled: NO];
-    // [self setBackgroundColor: [UIColor blueColor]];
+    [self setBackgroundColor: [UIColor clearColor]];
 
     self.contactName = @"Unknown - Error";
     self.mostRecentMessage = @"Error Retrieving Message.";
 
+    self.fakeBar = [[UIToolbar alloc] initWithFrame:self.bounds];
+    self.fakeBar.autoresizingMask = self.autoresizingMask;
+    self.fakeBar.barStyle = UIBarStyleDefault;
+    self.fakeBar.translucent = YES;
+    [self.fakeBar setBackgroundColor: [UIColor clearColor]];
+    // [self insertSubview:self.fakeBar atIndex:0];
+    [self addSubview: self.fakeBar];
+
     // now create the labels and add them to the blurred view
     self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, 100, 55)];
     self.messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(10,10+50+10,100,80)];
-    [self.nameLabel setBackgroundColor: [UIColor redColor]];
-    [self.messageLabel setBackgroundColor: [UIColor redColor]];
+    [self.nameLabel setBackgroundColor: [UIColor clearColor]];
+    [self.messageLabel setBackgroundColor: [UIColor clearColor]];
 
-    [self addSubview:self.blurredPreview];
-    // [self.blurredPreview addSubview: self.nameLabel];
-    // [self.blurredPreview addSubview: self.messageLabel];
+    [self.fakeBar addSubview: self.nameLabel];
+    [self.fakeBar addSubview: self.messageLabel];
+
+    self.layer.cornerRadius = 8;
+    self.layer.masksToBounds = YES;
+
     self.alpha = 0;
 
 }
@@ -126,8 +136,8 @@ MS7SwipeDelegate
         // reset the previews just in case they're still animating
         [backPlacard.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
-        leftPreview.alpha = 1.0f;
-        leftPreview.alpha = 1.0f;
+        leftPreview.alpha = 1.0;
+        leftPreview.alpha = 1.0;
         // NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
@@ -225,11 +235,7 @@ MS7SwipeDelegate
                             leftPreview.alpha = 0;
                             rightPreview.alpha = 0;
                          }
-                         completion:^(BOOL finished){
-                            // if (finished) {
-                            //     [self resetPreviewsAnimated:NO];
-                            // }
-                         }];
+                         completion:nil];
     }
 }
 
