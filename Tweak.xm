@@ -12,6 +12,7 @@
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
 #import <iOS7/Frameworks/UIKit/UIView.h>
+#import <iOS7/Frameworks/UIKit/_UIBackdropView.h>
 
 // #import <substrate.h>
 
@@ -330,7 +331,16 @@ static MS7SwipeDelegate *swipeDelegate;
 %end
 
 
-
+%hook _UIBackdropView
+- (void)applySettings:(id)arg1 {
+    %log;
+    %orig;
+}
+- (void)applySettingsWithBuiltInAnimation:(id)arg1 {
+    %log;
+    %orig;
+}
+%end
 
 
 
