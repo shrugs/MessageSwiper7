@@ -18,13 +18,11 @@
 // PREFERENCES
 #define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
 
-static MS7SwipeDelegate *swipeDelegate;
+static BOOL globalEnable = YES;
 static BOOL didRun = NO;
 static BOOL wrapAroundEnabled = YES;
 static CKMessagesController *ckMessagesController = nil;
 static UIView *backPlacard = nil;
-static MS7ConvoPreview *leftPreview;
-static MS7ConvoPreview *rightPreview;
 static NSMutableArray *convos;
 static int currentConvoIndex = 0;
 
@@ -94,6 +92,8 @@ END MS7ConvoPreview
 
 
 */
+static MS7ConvoPreview *leftPreview;
+static MS7ConvoPreview *rightPreview;
 
 /*
 
@@ -258,8 +258,7 @@ END MS7SwipeDelegate
 
 */
 
-
-
+static MS7SwipeDelegate *swipeDelegate;
 
 
 
@@ -276,7 +275,7 @@ END MS7SwipeDelegate
 
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
-    backPlacard = view.superview;
+    backPlacard = self.view.superview;
 
 
 
@@ -285,7 +284,6 @@ END MS7SwipeDelegate
             didRun = YES;
             swipeDelegate = [[MS7SwipeDelegate alloc] init];
 
-            wrapAroundEnabled = wrapAroundEnabled;
             backPlacard.layer.borderColor = [[UIColor redColor] CGColor];
             backPlacard.layer.borderWidth = 3.0f;
 
@@ -401,7 +399,7 @@ END MS7SwipeDelegate
 
 static void MS7UpdatePreferences() {
     NSDictionary *preferences = [[NSDictionary alloc] initWithContentsOfFile:PrefPath];
-    BOOL globalEnable = YES;
+    globalEnable = YES;
     if (preferences) {
         //if the option exists make it that, else default
         if ([preferences valueForKey:@"globalEnable"] != nil) {
@@ -415,6 +413,7 @@ static void MS7UpdatePreferences() {
             wrapAroundEnabled = NO;
         }
     }
+    [preferences release];
 }
 
 static void reloadPrefsNotification(CFNotificationCenterRef center,
@@ -422,10 +421,9 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
                     CFStringRef name,
                     const void *object,
                     CFDictionaryRef userInfo) {
-    stacksUpdatePreferences();
+    MS7UpdatePreferences();
 }
 
-[preferences release];
 %ctor {
 
    //init prefs again
