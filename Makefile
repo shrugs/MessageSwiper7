@@ -15,3 +15,6 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
 	install.exec "killall -9 backboardd"
+
+SUBPROJECTS += messageswiper7settings
+include $(THEOS_MAKE_PATH)/aggregate.mk
