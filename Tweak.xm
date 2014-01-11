@@ -386,9 +386,9 @@ static MS7SwipeDelegate *swipeDelegate;
 }
 
 - (void)sendMessage:(id)arg1 {
-    %orig;
     convos = [[%c(CKConversationList) sharedConversationList] conversations];
     currentConvoIndex = 0;
+    %orig;
 
 }
 
