@@ -18,7 +18,7 @@
 // #import <substrate.h>
 
 // PREFERENCES
-#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
+#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper.plist"]
 
 static BOOL globalEnable = YES;
 static BOOL wrapAroundEnabled = YES;

@@ -20,13 +20,13 @@
 		    <key>default</key>
 		    <true/>
 		    <key>defaults</key>
-		    <string>com.mattcmultimedia.messageswiper7</string>
+		    <string>com.mattcmultimedia.messageswiper</string>
 		    <key>key</key>
 		    <string>globalEnable</string>
 		    <key>label</key>
 		    <string>Enable</string>
 		    <key>postNotification</key>
-		    <string>com.mattcmultimedia.messageswiper7/reload</string>
+		    <string>com.mattcmultimedia.messageswiper/reload</string>
 		</dict>
 		<!-- WRAP AROUND -->
 		<dict>
@@ -35,13 +35,13 @@
 		    <key>default</key>
 		    <true/>
 		    <key>defaults</key>
-		    <string>com.mattcmultimedia.messageswiper7</string>
+		    <string>com.mattcmultimedia.messageswiper</string>
 		    <key>key</key>
 		    <string>wrapAroundEnabled</string>
 		    <key>label</key>
 		    <string>Wrap Around</string>
 		    <key>postNotification</key>
-		    <string>com.mattcmultimedia.messageswiper7/reload</string>
+		    <string>com.mattcmultimedia.messageswiper/reload</string>
 		</dict>
 
 		<dict>
@@ -50,7 +50,7 @@
 		    <key>default</key>
 		    <integer>0</integer>
 		    <key>defaults</key>
-		    <string>com.mattcmultimedia.messageswiper7</string>
+		    <string>com.mattcmultimedia.messageswiper</string>
 		    <key>detail</key>
 		    <string>PSListItemsController</string>
 		    <key>key</key>
@@ -68,7 +68,7 @@
 		        <integer>1</integer>
 		    </array>
 		    <key>postNotification</key>
-		    <string>com.mattcmultimedia.messageswiper7/reload</string>
+		    <string>com.mattcmultimedia.messageswiper/reload</string>
 		</dict>
 
 		<dict>
@@ -77,7 +77,7 @@
 		    <key>default</key>
 		    <real>20</real>
 		    <key>defaults</key>
-		    <string>com.mattcmultimedia.messageswiper7</string>
+		    <string>com.mattcmultimedia.messageswiper</string>
 		    <key>min</key>
 		    <real>5</real>
 		    <key>max</key>
@@ -89,7 +89,7 @@
 		    <key>key</key>
 		    <string>edgePercent</string>
 		    <key>postNotification</key>
-		    <string>com.mattcmultimedia.messageswiper7/reload</string>
+		    <string>com.mattcmultimedia.messageswiper/reload</string>
 		</dict>
 
 
