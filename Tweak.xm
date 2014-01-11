@@ -129,7 +129,7 @@ MS7SwipeDelegate
         // swiped to left, so -1
         int nextConvoIndex = 0;
         nextConvoIndex = currentConvoIndex - 1;
-        if (nextConvoIndex <= 0) {
+        if (currentConvoIndex == 0) {
             if (wrapAroundEnabled) {
                 nextConvoIndex = [convos count] - 1 ;
             } else {
@@ -137,7 +137,10 @@ MS7SwipeDelegate
                 //maybe show bounce animation here
             }
         }
+        // NSLog(@"%i", (int)[convos count]);
+        // NSLog(@"%i", nextConvoIndex);
         [self setLeftConversation: [convos objectAtIndex: nextConvoIndex]];
+        nextConvoIndex = 0;
         nextConvoIndex = currentConvoIndex + 1;
         if (nextConvoIndex >= [convos count]) {
             if (wrapAroundEnabled) {
@@ -173,7 +176,7 @@ MS7SwipeDelegate
         if (leftTriggered) {
             // swiped to left, so -1
             nextConvoIndex = currentConvoIndex - 1;
-            if (currentConvoIndex <= 0) {
+            if (currentConvoIndex == 0) {
                 if (wrapAroundEnabled) {
                     nextConvoIndex = [convos count] - 1 ;
                 } else {
@@ -263,13 +266,14 @@ MS7SwipeDelegate
 }
 - (void)setLeftConversation:(CKConversation *)convo
 {
-    [leftNameLabel setText: [convo name]];
-    [leftMessageLabel setText: [[convo latestMessage] previewText]];
+    // NSLog(@"left convo: %@", convo);
+    [leftNameLabel setText: [convo name]?:@"Unknown - Error"];
+    [leftMessageLabel setText: [[convo latestMessage] previewText]?:@"Error Retrieving Message"];
 }
 - (void)setRightConversation:(CKConversation *)convo
 {
-    [rightNameLabel setText: [convo name]];
-    [rightMessageLabel setText: [[convo latestMessage] previewText]];
+    [rightNameLabel setText: [convo name]?:@"Unknown - Error"];
+    [rightMessageLabel setText: [[convo latestMessage] previewText]?:@"Error Retrieving Message"];
 }
 
 -(void)resetPreviewsAnimated:(BOOL)shouldAnimate {
@@ -397,7 +401,7 @@ static MS7SwipeDelegate *swipeDelegate;
 }
 
 - (BOOL)resumeToConversation:(id)fp8 {
-
+    convos = [[%c(CKConversationList) sharedConversationList] conversations];
     currentConvoIndex = [convos indexOfObject:fp8];
 
     return %orig;
@@ -450,7 +454,6 @@ static MS7SwipeDelegate *swipeDelegate;
 
 static void MS7UpdatePreferences() {
     NSDictionary *preferences = [[NSDictionary alloc] initWithContentsOfFile:PrefPath];
-    NSLog(@"%@", preferences);
     globalEnable = YES;
     if (preferences) {
         //if the option exists make it that, else default

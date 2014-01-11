@@ -101,8 +101,8 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
-			<!-- <key>label</key>
-			<string>© MattCMultimedia, AKA Shrugs 2013</string> -->
+			<key>label</key>
+			<string>MattCMultimedia, AKA Shrugs 2013</string>
 		</dict>
 
 
