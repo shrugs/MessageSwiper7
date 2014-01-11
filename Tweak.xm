@@ -39,6 +39,8 @@ static UILabel *rightNameLabel;
 static UILabel *leftMessageLabel;
 static UILabel *rightMessageLabel;
 
+
+%group MessagesiOS7
 /*
 
 
@@ -345,12 +347,6 @@ static MS7SwipeDelegate *swipeDelegate;
 
 
 
-
-
-
-
-%group Messages
-
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
 // Those CKTranscriptCollectionView s have a subview of class CKTranscriptScrollView (orsomething like that)
@@ -439,26 +435,6 @@ static MS7SwipeDelegate *swipeDelegate;
 
 %end
 
-// %hook CKConversation
-
-// // - (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2 {
-// //     // %log;
-// //     %orig;
-// // }
-// // - (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3 {
-// //     // %log;
-// //     %orig;
-// // }
-// - (id)newMessageWithComposition:(id)arg1 addToConversation:(BOOL)arg2 {
-//     %log;
-//     return %orig;
-// }
-// - (id)newMessageWithComposition:(id)arg1 guid:(id)arg2 addToConversation:(BOOL)arg3 {
-//     %log;
-//     return %orig;
-// }
-
-// %end
 
 %end
 
@@ -508,7 +484,13 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
                     CFSTR("com.mattcmultimedia.messageswiper7/reload"), NULL, 0);
 
 
-    %init(Messages);
-    // %init(WhatsAppStuff);
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        %init(MessagesiOS7);
+    } else {
+        %init(MessagesiOS6);
+        %init(WhatsAppiOS6);
+    }
+
+
 
 }
