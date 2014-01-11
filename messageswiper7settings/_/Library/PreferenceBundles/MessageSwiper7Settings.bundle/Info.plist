@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>MessageSwiper7</string>
+	<string>MessageSwiper7Settings</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.mattcmultimedia.messageswiper7settings</string>
 	<key>CFBundleInfoDictionaryVersion</key>

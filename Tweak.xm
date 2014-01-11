@@ -380,10 +380,17 @@ static MS7SwipeDelegate *swipeDelegate;
 
         }
         [swipeDelegate addPreviews];
+
+        convos = [[%c(CKConversationList) sharedConversationList] conversations];
     }
 }
 
+- (void)sendMessage:(id)arg1 {
+    %orig;
+    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    currentConvoIndex = 0;
 
+}
 
 %end
 
@@ -434,18 +441,21 @@ static MS7SwipeDelegate *swipeDelegate;
 
 // %hook CKConversation
 
-// - (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2
-// {
-//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
-//     currentConvoIndex = [convos indexOfObject:self];
-//     %orig;
+// // - (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2 {
+// //     // %log;
+// //     %orig;
+// // }
+// // - (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3 {
+// //     // %log;
+// //     %orig;
+// // }
+// - (id)newMessageWithComposition:(id)arg1 addToConversation:(BOOL)arg2 {
+//     %log;
+//     return %orig;
 // }
-// - (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3
-// {
-//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
-//     currentConvoIndex = [convos indexOfObject:self];
-//     %orig;
-
+// - (id)newMessageWithComposition:(id)arg1 guid:(id)arg2 addToConversation:(BOOL)arg3 {
+//     %log;
+//     return %orig;
 // }
 
 // %end
@@ -497,8 +507,8 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
     CFNotificationCenterAddObserver(reload, NULL, &reloadPrefsNotification,
                     CFSTR("com.mattcmultimedia.messageswiper7/reload"), NULL, 0);
 
-    if (globalEnable) {
-        %init(Messages);
-        // %init(WhatsAppStuff);
-    }
+
+    %init(Messages);
+    // %init(WhatsAppStuff);
+
 }
