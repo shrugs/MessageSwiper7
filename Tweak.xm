@@ -25,7 +25,7 @@ static BOOL wrapAroundEnabled = YES;
 static BOOL detectCenter = NO;
 static int edgePercent = 20; //%
 
-
+static BOOL didRun = NO;
 
 static CKMessagesController *ckMessagesController = nil;
 static UIView *backPlacard = nil;
@@ -38,450 +38,456 @@ static UILabel *leftMessageLabel;
 static UILabel *rightMessageLabel;
 
 
-%group iOS6
+// %group MessagesiOS6
 
+// static BOOL longSwipesEnabled = YES;
+// static BOOL enableAnimations = YES;
+// static int longSwipeDistance = 200;
+// static int shortSwipeDistance = 50;
+// static UIImage *previewImage;
+// static UIImage *flippedPreviewImage;
+// static CGPoint originalLocation;
 
-static NSString *getsuffix() {
+// static NSString *getsuffix() {
 
-    if ([[UIScreen mainScreen] scale] < 2.0f)
-        return @"";
-
-    return @"@2x";
-
-}
-
-
-//animation UIView interfaces and stuff
-@interface MSNextMessagePreviewView : UIImageView
-@property (assign) NSString *contactName;
-@property (assign) NSString *mostRecentMessage;
-
-- (void) setConversation:(CKConversation *)convo;
-
-@end
-@implementation MSNextMessagePreviewView
-@synthesize contactName = _contactName;
-@synthesize mostRecentMessage = _mostRecentMessage;
-
-- (void) setConversation:(CKConversation *)convo
-{
-    self.contactName = [convo name];
-    //would set mostRecentMessage here
-    self.mostRecentMessage = [[convo latestMessage] previewText]; //returns CKIMMessage => NSString
-
-
-}
-
-
-- (void)baseInit {
-    _contactName = NULL;
-    _contactName = @"Unknown - Error";
-    _mostRecentMessage = @"Error Retrieving Message.";
-}
-
-- (id)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self baseInit];
-    }
-    return self;
-}
-
-@end
-
-static MSNextMessagePreviewView *leftPreviewView = [[MSNextMessagePreviewView alloc] initWithFrame:CGRectMake(-60,10,120,160)];
-static MSNextMessagePreviewView *rightPreviewView = [[MSNextMessagePreviewView alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
-
-
-
-
-@interface MSSwipeDelegate : NSObject <UIGestureRecognizerDelegate>
-
--(void)messageSwiper_handlePan:(UIPanGestureRecognizer *)recognizer;
--(void)createPreviewImages;
-@end
-@implementation MSSwipeDelegate
-
--(void)createPreviewImages {
-    NSBundle *bundle = [[NSBundle alloc] initWithPath:@"/Library/Application Support/MessageSwiper/"];
-    NSString *imagePath = [bundle pathForResource:[NSString stringWithFormat:@"/previewImage%@", getsuffix()] ofType:@"png"];
-    previewImage = [UIImage imageWithContentsOfFile:imagePath];
-    flippedPreviewImage = [UIImage imageWithCGImage:previewImage.CGImage scale:previewImage.scale orientation:UIImageOrientationUpMirrored];
-
-    leftPreviewView.image = previewImage;
-    rightPreviewView.image = flippedPreviewImage;
-
-    [bundle release];
-    [imagePath release];
-}
-
--(void)messageSwiper_handlePan:(UIPanGestureRecognizer *)recognizer
-{
-    if (recognizer.state == UIGestureRecognizerStateBegan) {
-        //if new touch
-        originalLocation = [recognizer locationInView:recognizer.view];
-
-    }
-    //if convos are empty and stuff, just don't do anything, also if global enable off
-    if (!globalEnable) {
-        return;
-    }
-    if ((convos == NULL) || ([convos count] == 0)) {
-        return;
-    }
-    CGPoint tempLoc = [recognizer locationInView:recognizer.view];
-    CGPoint translation;//[recognizer translationInView:recognizer.view];
-    if (tempLoc.x >= originalLocation.x) {
-        translation = CGPointMake(tempLoc.x - originalLocation.x, originalLocation.y);
-    } else {
-        translation = CGPointMake(-1* (originalLocation.x - tempLoc.x), originalLocation.y);
-    }
-    unsigned int nextConvoIndex;
-
-    //positive == right
-    //negative == left
-    if (switchShortSwipeDirections) {
-        translation.x = -1 * translation.x;
-    }
-    if (translation.x > 0) {
-        //is an ongoing swipe to the right
-        rightPreviewView.center = CGPointMake(recognizer.view.frame.size.width+60, leftPreviewView.center.y);
-        rightPreviewView.hidden = YES;
-
-        nextConvoIndex = currentConvoIndex - 1;
-        if (currentConvoIndex == 0) {
-            if (wrapAroundEnabled) {
-                nextConvoIndex = [convos count] - 1 ;
-            } else {
-                nextConvoIndex = 0;
-                //maybe show bounce animation here
-            }
-        }
-        if (enableAnimations) {
-            //show animations here
-
-            if (![leftPreviewView isDescendantOfView:recognizer.view]) {
-                //if not added to view, go ahead and grab the image and add it to the view
-                if (previewImage == NULL) {
-                    [self createPreviewImages];
-                }
-                [recognizer.view addSubview:leftPreviewView];
-
-                leftNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(9, 15, 75, 50)];
-                [leftNameLabel setTextColor:[UIColor blackColor]];
-                [leftNameLabel setBackgroundColor:[UIColor clearColor]];
-                [leftNameLabel setFont:[UIFont systemFontOfSize: 14.0f]];
-                [leftNameLabel setNumberOfLines:4];
-                [leftNameLabel setLineBreakMode:NSLineBreakByWordWrapping];
-                [leftPreviewView addSubview:leftNameLabel];
-
-                //add message label here
-                leftMessageLabel = [[UILabel alloc] initWithFrame:CGRectMake(9,69,75, 79)];
-                [leftMessageLabel setTextColor:[UIColor blackColor]];
-                [leftMessageLabel setBackgroundColor:[UIColor clearColor]];
-                [leftMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
-                [leftMessageLabel setNumberOfLines:10];
-                [leftMessageLabel setLineBreakMode:NSLineBreakByWordWrapping];
-                [leftPreviewView addSubview:leftMessageLabel];
-            }
-            [leftPreviewView setConversation:[convos objectAtIndex:nextConvoIndex]];
-            leftNameLabel.text = leftPreviewView.contactName;
-            leftMessageLabel.text = leftPreviewView.mostRecentMessage;
-            //update message label here
-            [recognizer.view bringSubviewToFront:leftPreviewView];
-            leftPreviewView.hidden = NO;
-            if ((translation.x > longSwipeDistance) && longSwipesEnabled) {
-                leftNameLabel.text = @"Convo List";
-                leftMessageLabel.text = @"Release to Return to List.";
-            }
-
-            //actual animations
-
-            int scalar;
-            if (shortSwipeDistance > 120) {
-                scalar = 1;
-            } else {
-                scalar = (120/shortSwipeDistance);
-            }
-            //float slideFactor = 0.1 * slideMult; // Increase for more of a slide
-            CGPoint finalPoint = CGPointMake(-60 + (translation.x * scalar),
-                                             leftPreviewView.center.y);
-            finalPoint.x = MIN(finalPoint.x, 60);
-            //finalPoint.y = MIN(MAX(finalPoint.y, 0), recognizer.view.bounds.size.height);
-            if (translation.x > shortSwipeDistance+8) {
-                leftPreviewView.alpha = 1.0f;
-            } else {
-                leftPreviewView.alpha = 0.75f;
-            }
-
-            leftPreviewView.center = finalPoint;
-
-        }
-
-    } else {
-        //is an ongoing swipe left
-        leftPreviewView.hidden = YES;
-        leftPreviewView.center = CGPointMake(-60, leftPreviewView.center.y);
-        nextConvoIndex = currentConvoIndex + 1;
-        if (nextConvoIndex >= [convos count]) {
-            if (wrapAroundEnabled) {
-                nextConvoIndex = 0;
-            } else {
-                nextConvoIndex = currentConvoIndex;
-                //maybe display bounce animation here
-            }
-        }
-        if (enableAnimations) {
-            //show animations here
-
-            //previewImage.imageOrientation = UIImageOrientationUpMirrored;
-            if (![rightPreviewView isDescendantOfView:recognizer.view]) {
-                if (flippedPreviewImage == NULL) {
-                    [self createPreviewImages];
-                }
-
-                [recognizer.view addSubview:rightPreviewView];
-
-                rightNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(39, 15, 75, 50)];
-                [rightNameLabel setTextColor:[UIColor blackColor]];
-                [rightNameLabel setBackgroundColor:[UIColor clearColor]];
-                [rightNameLabel setFont:[UIFont systemFontOfSize: 14.0f]];
-                [rightNameLabel setNumberOfLines:4];
-                [rightNameLabel setLineBreakMode:NSLineBreakByWordWrapping];
-                [rightPreviewView addSubview:rightNameLabel];
-
-                rightMessageLabel = [[UILabel alloc] initWithFrame:CGRectMake(39,69,75, 79)];
-                [rightMessageLabel setTextColor:[UIColor blackColor]];
-                [rightMessageLabel setBackgroundColor:[UIColor clearColor]];
-                [rightMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
-                [rightMessageLabel setNumberOfLines:10];
-                [rightMessageLabel setLineBreakMode:NSLineBreakByWordWrapping];
-                [rightPreviewView addSubview:rightMessageLabel];
-            }
-
-            [rightPreviewView setConversation:[convos objectAtIndex:nextConvoIndex]];
-            rightNameLabel.text = rightPreviewView.contactName;
-            rightMessageLabel.text = rightPreviewView.mostRecentMessage;
-            [recognizer.view bringSubviewToFront:rightPreviewView];
-            rightPreviewView.hidden = NO;
-
-            if ((-1*translation.x > longSwipeDistance) && longSwipesEnabled) {
-                //set to first convo
-                [rightPreviewView setConversation:[convos objectAtIndex:0]];
-                rightNameLabel.text = rightPreviewView.contactName;
-                rightMessageLabel.text = rightPreviewView.mostRecentMessage;
-            }
-
-            //actually animate ImageView here
-            int scalar;
-            if (shortSwipeDistance > 120) {
-                scalar = 1;
-            } else {
-                scalar = (120/shortSwipeDistance);
-            }
-            CGPoint finalPoint = CGPointMake(recognizer.view.frame.size.width+60 + (translation.x * scalar), leftPreviewView.center.y);
-            finalPoint.x = MAX(finalPoint.x, recognizer.view.frame.size.width - 60);
-            //finalPoint.y = MIN(MAX(final2Point.y, 0), recognizer.view.bounds.size.height);
-            if (-1*translation.x > (shortSwipeDistance+8)) {
-                rightPreviewView.alpha = 1.0f;
-            } else {
-                rightPreviewView.alpha = 0.75f;
-            }
-
-            rightPreviewView.center = finalPoint;
-        }
-
-    }
-    //LIFTS FINGER
-
-    //once user lifts finger, do whatever should happen within swipe range
-    if (recognizer.state == UIGestureRecognizerStateEnded) {
-        //remove the UIView when this gets called
-
-
-        leftPreviewView.hidden = YES;
-        rightPreviewView.hidden = YES;
-        leftPreviewView.center = CGPointMake(-60, leftPreviewView.center.y);
-        rightPreviewView.center = CGPointMake(recognizer.view.frame.size.width+60, rightPreviewView.center.y);
-
-
-
-
-        if (translation.x > 0) {
-
-            //ended swipe on right side
-
-            if ((translation.x >= longSwipeDistance) && longSwipesEnabled) {
-                //if long swipe right, show list
-                if (switchShortSwipeDirections) {
-                    //but if switched, show newest message
-                    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-                    [ckMessagesController showConversation:[convos objectAtIndex:0] animate:YES];
-                } else {
-                    [ckMessagesController showConversationList:YES];
-                }
-                return;
-            }
-
-            if (translation.x >= shortSwipeDistance) {
-                //this is short swipe: show next convo
-                [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
-                return;
-            }
-
-        } else {
-
-            //ended swipe on left side
-            //long swipe stuff left
-            translation.x = -1 * translation.x;
-
-
-            if ((translation.x >= longSwipeDistance) && longSwipesEnabled) {
-                if (switchShortSwipeDirections) {
-                    [ckMessagesController showConversationList:YES];
-                } else {
-                    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-                    [ckMessagesController showConversation:[convos objectAtIndex:0] animate:YES];
-                }
-                return;
-            }
-            //short swipe stuff left
-            if (translation.x >= shortSwipeDistance) {
-                //this is short swipe: show next convo
-
-                [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
-                return;
-            }
-        }
-
-
-
-    }
-
-}
-
-//delegate methods
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
-{
-    return YES;
-}
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
-{
-    return YES;
-}
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
-{
-    return YES;
-}
-@end
-
-static MSSwipeDelegate *swipeDelegate;
-
-%hook CKTranscriptController
-
-- (void)viewDidAppear:(BOOL)arg1
-{
-    //only run this part once or otherwise we'll have multiple gestureRecognizers and shit
-    if (isFirstLaunch) {
-        backPlacard = self.view;
-        if (backPlacard) {
-            isFirstLaunch = NO;
-            if (!swipeDelegate) {
-                swipeDelegate = [[MSSwipeDelegate alloc] init];
-            }
-            //just in case it isn't default
-            backPlacard.userInteractionEnabled = YES;
-
-            //testing pan gesture recognizer - works pretty well
-            UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(messageSwiper_handlePan:)];
-            panRecognizer.maximumNumberOfTouches = 1;
-            [backPlacard addGestureRecognizer:panRecognizer];
-
-        }
-    }
-
-
-    %orig;
-
-}
-
-- (void)_messageReceived:(id)arg1
-{
-
-    %orig;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    currentConvoIndex = [convos indexOfObject:[self conversation]];
-
-}
-%end
-
-%hook CKMessagesController
--(void)_conversationLeft:(id)left
-{
-    //if you delete a convo
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    %orig;
-}
-
-
--(void)showConversation:(id)conversation animate:(BOOL)animate
-{
-    currentConvoIndex = [convos indexOfObject:conversation];
-    %orig;
-}
--(void)showConversation:(id)conversation animate:(BOOL)animate forceToTranscript:(BOOL)transcript
-{
-
-    currentConvoIndex = [convos indexOfObject:conversation];
-    %orig;
-}
-
--(BOOL)resumeToConversation:(id)conversation
-{
-    currentConvoIndex = [convos indexOfObject:conversation];
-    return %orig;
-}
-//grabs the ckMessagesController object
-
--(id)init
-{
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    ckMessagesController = self;
-    return %orig;
-}
-
-%end
-
-%hook CKConversation
-
-- (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2
-{
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    currentConvoIndex = [convos indexOfObject:self];
-    %orig;
-}
-- (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3
-{
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    currentConvoIndex = [convos indexOfObject:self];
-    %orig;
-
-}
-
-%end
-
-
-
-
-
-
-
-%end
+//     if ([[UIScreen mainScreen] scale] < 2.0f)
+//         return @"";
+
+//     return @"@2x";
+
+// }
+
+
+// //animation UIView interfaces and stuff
+// @interface MSNextMessagePreviewView : UIImageView
+// @property (assign) NSString *contactName;
+// @property (assign) NSString *mostRecentMessage;
+
+// - (void) setConversation:(CKConversation *)convo;
+
+// @end
+// @implementation MSNextMessagePreviewView
+// @synthesize contactName = _contactName;
+// @synthesize mostRecentMessage = _mostRecentMessage;
+
+// - (void) setConversation:(CKConversation *)convo
+// {
+//     self.contactName = [convo name];
+//     //would set mostRecentMessage here
+//     self.mostRecentMessage = [[convo latestMessage] previewText]; //returns CKIMMessage => NSString
+
+
+// }
+
+
+// - (void)baseInit {
+//     _contactName = NULL;
+//     _contactName = @"Unknown - Error";
+//     _mostRecentMessage = @"Error Retrieving Message.";
+// }
+
+// - (id)initWithFrame:(CGRect)frame
+// {
+//     self = [super initWithFrame:frame];
+//     if (self) {
+//         [self baseInit];
+//     }
+//     return self;
+// }
+
+// @end
+
+// static MSNextMessagePreviewView *leftPreviewView = [[MSNextMessagePreviewView alloc] initWithFrame:CGRectMake(-60,10,120,160)];
+// static MSNextMessagePreviewView *rightPreviewView = [[MSNextMessagePreviewView alloc] initWithFrame:CGRectMake(backPlacard.frame.size.width+60,10,120,160)];
+
+
+
+
+// @interface MSSwipeDelegate : NSObject <UIGestureRecognizerDelegate>
+
+// -(void)messageSwiper_handlePan:(UIPanGestureRecognizer *)recognizer;
+// -(void)createPreviewImages;
+// @end
+// @implementation MSSwipeDelegate
+
+// -(void)createPreviewImages {
+//     NSBundle *bundle = [[NSBundle alloc] initWithPath:@"/Library/Application Support/MessageSwiper/"];
+//     NSString *imagePath = [bundle pathForResource:[NSString stringWithFormat:@"/previewImage%@", getsuffix()] ofType:@"png"];
+//     previewImage = [UIImage imageWithContentsOfFile:imagePath];
+//     flippedPreviewImage = [UIImage imageWithCGImage:previewImage.CGImage scale:previewImage.scale orientation:UIImageOrientationUpMirrored];
+
+//     leftPreviewView.image = previewImage;
+//     rightPreviewView.image = flippedPreviewImage;
+
+//     [bundle release];
+//     [imagePath release];
+// }
+
+// -(void)messageSwiper_handlePan:(UIPanGestureRecognizer *)recognizer
+// {
+//     if (recognizer.state == UIGestureRecognizerStateBegan) {
+//         //if new touch
+//         originalLocation = [recognizer locationInView:recognizer.view];
+
+//     }
+//     //if convos are empty and stuff, just don't do anything, also if global enable off
+//     if (!globalEnable) {
+//         return;
+//     }
+//     if ((convos == NULL) || ([convos count] == 0)) {
+//         return;
+//     }
+//     CGPoint tempLoc = [recognizer locationInView:recognizer.view];
+//     CGPoint translation;//[recognizer translationInView:recognizer.view];
+//     if (tempLoc.x >= originalLocation.x) {
+//         translation = CGPointMake(tempLoc.x - originalLocation.x, originalLocation.y);
+//     } else {
+//         translation = CGPointMake(-1* (originalLocation.x - tempLoc.x), originalLocation.y);
+//     }
+//     unsigned int nextConvoIndex;
+
+//     //positive == right
+//     //negative == left
+//     if (NO) {
+//         translation.x = -1 * translation.x;
+//     }
+//     if (translation.x > 0) {
+//         //is an ongoing swipe to the right
+//         rightPreviewView.center = CGPointMake(recognizer.view.frame.size.width+60, leftPreviewView.center.y);
+//         rightPreviewView.hidden = YES;
+
+//         nextConvoIndex = currentConvoIndex - 1;
+//         if (currentConvoIndex == 0) {
+//             if (wrapAroundEnabled) {
+//                 nextConvoIndex = [convos count] - 1 ;
+//             } else {
+//                 nextConvoIndex = 0;
+//                 //maybe show bounce animation here
+//             }
+//         }
+//         if (enableAnimations) {
+//             //show animations here
+
+//             if (![leftPreviewView isDescendantOfView:recognizer.view]) {
+//                 //if not added to view, go ahead and grab the image and add it to the view
+//                 if (previewImage == NULL) {
+//                     [self createPreviewImages];
+//                 }
+//                 [recognizer.view addSubview:leftPreviewView];
+
+//                 leftNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(9, 15, 75, 50)];
+//                 [leftNameLabel setTextColor:[UIColor blackColor]];
+//                 [leftNameLabel setBackgroundColor:[UIColor clearColor]];
+//                 [leftNameLabel setFont:[UIFont systemFontOfSize: 14.0f]];
+//                 [leftNameLabel setNumberOfLines:4];
+//                 [leftNameLabel setLineBreakMode:NSLineBreakByWordWrapping];
+//                 [leftPreviewView addSubview:leftNameLabel];
+
+//                 //add message label here
+//                 leftMessageLabel = [[UILabel alloc] initWithFrame:CGRectMake(9,69,75, 79)];
+//                 [leftMessageLabel setTextColor:[UIColor blackColor]];
+//                 [leftMessageLabel setBackgroundColor:[UIColor clearColor]];
+//                 [leftMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
+//                 [leftMessageLabel setNumberOfLines:10];
+//                 [leftMessageLabel setLineBreakMode:NSLineBreakByWordWrapping];
+//                 [leftPreviewView addSubview:leftMessageLabel];
+//             }
+//             [leftPreviewView setConversation:[convos objectAtIndex:nextConvoIndex]];
+//             leftNameLabel.text = leftPreviewView.contactName;
+//             leftMessageLabel.text = leftPreviewView.mostRecentMessage;
+//             //update message label here
+//             [recognizer.view bringSubviewToFront:leftPreviewView];
+//             leftPreviewView.hidden = NO;
+//             if ((translation.x > longSwipeDistance) && longSwipesEnabled) {
+//                 leftNameLabel.text = @"Convo List";
+//                 leftMessageLabel.text = @"Release to Return to List.";
+//             }
+
+//             //actual animations
+
+//             int scalar;
+//             if (shortSwipeDistance > 120) {
+//                 scalar = 1;
+//             } else {
+//                 scalar = (120/shortSwipeDistance);
+//             }
+//             //float slideFactor = 0.1 * slideMult; // Increase for more of a slide
+//             CGPoint finalPoint = CGPointMake(-60 + (translation.x * scalar),
+//                                              leftPreviewView.center.y);
+//             finalPoint.x = MIN(finalPoint.x, 60);
+//             //finalPoint.y = MIN(MAX(finalPoint.y, 0), recognizer.view.bounds.size.height);
+//             if (translation.x > shortSwipeDistance+8) {
+//                 leftPreviewView.alpha = 1.0f;
+//             } else {
+//                 leftPreviewView.alpha = 0.75f;
+//             }
+
+//             leftPreviewView.center = finalPoint;
+
+//         }
+
+//     } else {
+//         //is an ongoing swipe left
+//         leftPreviewView.hidden = YES;
+//         leftPreviewView.center = CGPointMake(-60, leftPreviewView.center.y);
+//         nextConvoIndex = currentConvoIndex + 1;
+//         if (nextConvoIndex >= [convos count]) {
+//             if (wrapAroundEnabled) {
+//                 nextConvoIndex = 0;
+//             } else {
+//                 nextConvoIndex = currentConvoIndex;
+//                 //maybe display bounce animation here
+//             }
+//         }
+//         if (enableAnimations) {
+//             //show animations here
+
+//             //previewImage.imageOrientation = UIImageOrientationUpMirrored;
+//             if (![rightPreviewView isDescendantOfView:recognizer.view]) {
+//                 if (flippedPreviewImage == NULL) {
+//                     [self createPreviewImages];
+//                 }
+
+//                 [recognizer.view addSubview:rightPreviewView];
+
+//                 rightNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(39, 15, 75, 50)];
+//                 [rightNameLabel setTextColor:[UIColor blackColor]];
+//                 [rightNameLabel setBackgroundColor:[UIColor clearColor]];
+//                 [rightNameLabel setFont:[UIFont systemFontOfSize: 14.0f]];
+//                 [rightNameLabel setNumberOfLines:4];
+//                 [rightNameLabel setLineBreakMode:NSLineBreakByWordWrapping];
+//                 [rightPreviewView addSubview:rightNameLabel];
+
+//                 rightMessageLabel = [[UILabel alloc] initWithFrame:CGRectMake(39,69,75, 79)];
+//                 [rightMessageLabel setTextColor:[UIColor blackColor]];
+//                 [rightMessageLabel setBackgroundColor:[UIColor clearColor]];
+//                 [rightMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
+//                 [rightMessageLabel setNumberOfLines:10];
+//                 [rightMessageLabel setLineBreakMode:NSLineBreakByWordWrapping];
+//                 [rightPreviewView addSubview:rightMessageLabel];
+//             }
+
+//             [rightPreviewView setConversation:[convos objectAtIndex:nextConvoIndex]];
+//             rightNameLabel.text = rightPreviewView.contactName;
+//             rightMessageLabel.text = rightPreviewView.mostRecentMessage;
+//             [recognizer.view bringSubviewToFront:rightPreviewView];
+//             rightPreviewView.hidden = NO;
+
+//             if ((-1*translation.x > longSwipeDistance) && longSwipesEnabled) {
+//                 //set to first convo
+//                 [rightPreviewView setConversation:[convos objectAtIndex:0]];
+//                 rightNameLabel.text = rightPreviewView.contactName;
+//                 rightMessageLabel.text = rightPreviewView.mostRecentMessage;
+//             }
+
+//             //actually animate ImageView here
+//             int scalar;
+//             if (shortSwipeDistance > 120) {
+//                 scalar = 1;
+//             } else {
+//                 scalar = (120/shortSwipeDistance);
+//             }
+//             CGPoint finalPoint = CGPointMake(recognizer.view.frame.size.width+60 + (translation.x * scalar), leftPreviewView.center.y);
+//             finalPoint.x = MAX(finalPoint.x, recognizer.view.frame.size.width - 60);
+//             //finalPoint.y = MIN(MAX(final2Point.y, 0), recognizer.view.bounds.size.height);
+//             if (-1*translation.x > (shortSwipeDistance+8)) {
+//                 rightPreviewView.alpha = 1.0f;
+//             } else {
+//                 rightPreviewView.alpha = 0.75f;
+//             }
+
+//             rightPreviewView.center = finalPoint;
+//         }
+
+//     }
+//     //LIFTS FINGER
+
+//     //once user lifts finger, do whatever should happen within swipe range
+//     if (recognizer.state == UIGestureRecognizerStateEnded) {
+//         //remove the UIView when this gets called
+
+
+//         leftPreviewView.hidden = YES;
+//         rightPreviewView.hidden = YES;
+//         leftPreviewView.center = CGPointMake(-60, leftPreviewView.center.y);
+//         rightPreviewView.center = CGPointMake(recognizer.view.frame.size.width+60, rightPreviewView.center.y);
+
+
+
+
+//         if (translation.x > 0) {
+
+//             //ended swipe on right side
+
+//             if ((translation.x >= longSwipeDistance) && longSwipesEnabled) {
+//                 //if long swipe right, show list
+//                 if (NO) {
+//                     //but if switched, show newest message
+//                     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//                     [ckMessagesController showConversation:[convos objectAtIndex:0] animate:YES];
+//                 } else {
+//                     [ckMessagesController showConversationList:YES];
+//                 }
+//                 return;
+//             }
+
+//             if (translation.x >= shortSwipeDistance) {
+//                 //this is short swipe: show next convo
+//                 [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
+//                 return;
+//             }
+
+//         } else {
+
+//             //ended swipe on left side
+//             //long swipe stuff left
+//             translation.x = -1 * translation.x;
+
+
+//             if ((translation.x >= longSwipeDistance) && longSwipesEnabled) {
+//                 if (NO) {
+//                     [ckMessagesController showConversationList:YES];
+//                 } else {
+//                     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//                     [ckMessagesController showConversation:[convos objectAtIndex:0] animate:YES];
+//                 }
+//                 return;
+//             }
+//             //short swipe stuff left
+//             if (translation.x >= shortSwipeDistance) {
+//                 //this is short swipe: show next convo
+
+//                 [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
+//                 return;
+//             }
+//         }
+
+
+
+//     }
+
+// }
+
+// //delegate methods
+// - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+// {
+//     return YES;
+// }
+// - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+// {
+//     return YES;
+// }
+// - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+// {
+//     return YES;
+// }
+// @end
+
+// static MSSwipeDelegate *swipeDelegate6;
+
+// %hook CKTranscriptController
+
+// - (void)viewDidAppear:(BOOL)arg1
+// {
+//     //only run this part once or otherwise we'll have multiple gestureRecognizers and shit
+//     if (didRun) {
+//         backPlacard = self.view;
+//         if (backPlacard) {
+//             didRun = NO;
+//             if (!swipeDelegate6) {
+//                 swipeDelegate6 = [[MSSwipeDelegate alloc] init];
+//             }
+//             //just in case it isn't default
+//             backPlacard.userInteractionEnabled = YES;
+
+//             //testing pan gesture recognizer - works pretty well
+//             UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate6 action:@selector(messageSwiper_handlePan:)];
+//             panRecognizer.maximumNumberOfTouches = 1;
+//             [backPlacard addGestureRecognizer:panRecognizer];
+
+//         }
+//     }
+
+
+//     %orig;
+
+// }
+
+// - (void)_messageReceived:(id)arg1
+// {
+
+//     %orig;
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     currentConvoIndex = [convos indexOfObject:[self conversation]];
+
+// }
+// %end
+
+// %hook CKMessagesController
+// -(void)_conversationLeft:(id)left
+// {
+//     //if you delete a convo
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     %orig;
+// }
+
+
+// -(void)showConversation:(id)conversation animate:(BOOL)animate
+// {
+//     currentConvoIndex = [convos indexOfObject:conversation];
+//     %orig;
+// }
+// -(void)showConversation:(id)conversation animate:(BOOL)animate forceToTranscript:(BOOL)transcript
+// {
+
+//     currentConvoIndex = [convos indexOfObject:conversation];
+//     %orig;
+// }
+
+// -(BOOL)resumeToConversation:(id)conversation
+// {
+//     currentConvoIndex = [convos indexOfObject:conversation];
+//     return %orig;
+// }
+// //grabs the ckMessagesController object
+
+// -(id)init
+// {
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     ckMessagesController = self;
+//     return %orig;
+// }
+
+// %end
+
+// %hook CKConversation
+
+// - (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2
+// {
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     currentConvoIndex = [convos indexOfObject:self];
+//     %orig;
+// }
+// - (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3
+// {
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     currentConvoIndex = [convos indexOfObject:self];
+//     %orig;
+
+// }
+
+// %end
+
+
+
+
+
+
+
+// %end
 
 %group MessagesiOS7
 
-static BOOL didRun = NO;
 static BOOL leftTriggered = NO;
 static BOOL rightTriggered = NO;
 static CKTranscriptController *cKTranscriptController = nil;
@@ -923,14 +929,14 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
     MS7UpdatePreferences();
     CFNotificationCenterRef reload = CFNotificationCenterGetDarwinNotifyCenter();
     CFNotificationCenterAddObserver(reload, NULL, &reloadPrefsNotification,
-                    CFSTR("com.mattcmultimedia.messageswiper7/reload"), NULL, 0);
+                    CFSTR("com.mattcmultimedia.messageswiper/reload"), NULL, 0);
 
-
+    %init;
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
         %init(MessagesiOS7);
     } else {
-        %init(MessagesiOS6);
-        %init(WhatsAppiOS6);
+        // %init(MessagesiOS6);
+        // %init(WhatsAppiOS6);
     }
 
 
