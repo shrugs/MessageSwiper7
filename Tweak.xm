@@ -385,12 +385,12 @@ static MS7SwipeDelegate *swipeDelegate;
     }
 }
 
-- (void)sendMessage:(id)arg1 {
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
-    currentConvoIndex = 0;
-    %orig;
+// - (void)sendMessage:(id)arg1 {
+//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
+//     currentConvoIndex = 0;
+//     %orig;
 
-}
+// }
 
 %end
 
@@ -439,26 +439,6 @@ static MS7SwipeDelegate *swipeDelegate;
 
 %end
 
-// %hook CKConversation
-
-// // - (void)sendMessage:(id)arg1 newComposition:(BOOL)arg2 {
-// //     // %log;
-// //     %orig;
-// // }
-// // - (void)sendMessage:(id)arg1 onService:(id)arg2 newComposition:(BOOL)arg3 {
-// //     // %log;
-// //     %orig;
-// // }
-// - (id)newMessageWithComposition:(id)arg1 addToConversation:(BOOL)arg2 {
-//     %log;
-//     return %orig;
-// }
-// - (id)newMessageWithComposition:(id)arg1 guid:(id)arg2 addToConversation:(BOOL)arg3 {
-//     %log;
-//     return %orig;
-// }
-
-// %end
 
 %end
 
