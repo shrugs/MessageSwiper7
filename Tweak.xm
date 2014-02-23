@@ -106,7 +106,6 @@ END MS7ConvoPreview
 // @interface CKTranscriptController
 // @property (nonatomic, retain) MS7ConvoPreview *leftPreview;
 // @property (nonatomic, retain) MS7ConvoPreview *rightPreview;
-// @property (nonatomic, retain) UIView *swipeDelegate;
 
 // @end
 // @implementation CKTranscriptController
@@ -127,14 +126,10 @@ END MS7ConvoPreview
 //     objc_setAssociatedObject(self, &rightHash, p, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 // }
 
-// - (UIView *)swipeDelegate {
-//     return objc_getAssociatedObject(self, &swipeDelegateHash);
-// }
-// - (void)setSwipeDelegate:(UIView *)p {
-//     objc_setAssociatedObject(self, &swipeDelegateHash, p, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-// }
 // @end
 
+static MS7ConvoPreview *leftPreview;
+static MS7ConvoPreview *rightPreview;
 
 
 
@@ -153,10 +148,10 @@ END MS7ConvoPreview
         height = 70+80+44;
     }
     if (!shouldAnimate) {
-        [self.leftPreview setCenter:CGPointMake(-60, height)];
-        [self.rightPreview setCenter:CGPointMake(self.view.superview.frame.size.width+60, height)];
-        self.leftPreview.alpha = 1.0;
-        self.rightPreview.alpha = 1.0;
+        [leftPreview setCenter:CGPointMake(-60, height)];
+        [rightPreview setCenter:CGPointMake(self.view.superview.frame.size.width+60, height)];
+        leftPreview.alpha = 1.0;
+        rightPreview.alpha = 1.0;
 
     } else {
         // animate to default positions.
@@ -164,17 +159,17 @@ END MS7ConvoPreview
                               delay:0.0
                             options: UIViewAnimationOptionCurveEaseOut
                          animations:^{
-                            self.leftPreview.center = CGPointMake(-60, self.leftPreview.center.y);
-                            self.rightPreview.center = CGPointMake(self.view.superview.frame.size.width+60, self.leftPreview.center.y);
-                            self.leftPreview.alpha = 0;
-                            self.rightPreview.alpha = 0;
+                            leftPreview.center = CGPointMake(-60, leftPreview.center.y);
+                            rightPreview.center = CGPointMake(self.view.superview.frame.size.width+60, leftPreview.center.y);
+                            leftPreview.alpha = 0;
+                            rightPreview.alpha = 0;
                          }
                          completion:nil];
     }
 }
 
 
-%new()
+%new(v@:@)
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
     NSLog(@"MS7_handlepan");
@@ -182,8 +177,8 @@ END MS7ConvoPreview
         // reset the previews just in case they're still animating
         [self.view.superview.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
-        self.leftPreview.alpha = 1.0;
-        self.rightPreview.alpha = 1.0;
+        leftPreview.alpha = 1.0;
+        rightPreview.alpha = 1.0;
         // NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
@@ -224,13 +219,13 @@ END MS7ConvoPreview
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
     int newX = (int) -60+translation;
-    [self.leftPreview setCenter:CGPointMake(MIN(60, newX), self.leftPreview.center.y)];
-    leftTriggered = self.leftPreview.center.x == 60;
+    [leftPreview setCenter:CGPointMake(MIN(60, newX), leftPreview.center.y)];
+    leftTriggered = leftPreview.center.x == 60;
 
 
     newX = (int) self.view.superview.frame.size.width+60+translation;
-    [self.rightPreview setCenter:CGPointMake(MAX(self.view.superview.frame.size.width-60, newX), self.rightPreview.center.y)];
-    rightTriggered = self.rightPreview.center.x == self.view.superview.frame.size.width-60;
+    [rightPreview setCenter:CGPointMake(MAX(self.view.superview.frame.size.width-60, newX), rightPreview.center.y)];
+    rightTriggered = rightPreview.center.x == self.view.superview.frame.size.width-60;
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
@@ -278,7 +273,7 @@ END MS7ConvoPreview
     %orig;
 }
 
-%new
+%new(v@:)
 - (void)initPreviews
 {
     [self setLeftPreview: [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)] autorelease]];
@@ -319,28 +314,28 @@ END MS7ConvoPreview
     [leftMessageLabel setText: @"Error Retrieving Message"];
     [rightMessageLabel setText: @"Error Retrieving Message"];
 
-    [self.leftPreview addSubview: leftNameLabel];
-    [self.rightPreview addSubview: rightNameLabel];
-    [self.leftPreview addSubview: leftMessageLabel];
-    [self.rightPreview addSubview: rightMessageLabel];
+    [leftPreview addSubview: leftNameLabel];
+    [rightPreview addSubview: rightNameLabel];
+    [leftPreview addSubview: leftMessageLabel];
+    [rightPreview addSubview: rightMessageLabel];
 }
 
-%new
+%new(v@:)
 -(void)addPreviews {
-    NSLog(@"addPreviews, %@, %@, %@", self.view.superview, self.leftPreview, self.rightPreview);
-    [self.view.superview addSubview: self.leftPreview];
-    [self.view.superview addSubview: self.rightPreview];
+    NSLog(@"addPreviews, %@, %@, %@", self.view.superview, leftPreview, rightPreview);
+    [self.view.superview addSubview: leftPreview];
+    [self.view.superview addSubview: rightPreview];
     [self resetPreviewsAnimated: NO];
 }
 
-%new
+%new(v@:@)
 - (void)setLeftConversation:(CKConversation *)convo
 {
     // NSLog(@"left convo: %@", convo);
     [leftNameLabel setText: [convo name]?:@"Unknown - Error"];
     [leftMessageLabel setText: [[convo latestMessage] previewText]?:@"Error Retrieving Message"];
 }
-%new
+%new(v@:@)
 - (void)setRightConversation:(CKConversation *)convo
 {
     [rightNameLabel setText: [convo name]?:@"Unknown - Error"];
