@@ -1,4 +1,6 @@
 export THEOS_DEVICE_IP=192.168.1.4
+# because the %new fns aren't recognized as existing by the compiler
+export GO_EASY_ON_ME=1
 
 ARCHS = armv7 armv7s arm64
 include theos/makefiles/common.mk

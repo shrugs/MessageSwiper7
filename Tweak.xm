@@ -73,7 +73,7 @@ MS7ConvoPreview
     self.alpha = 0;
 
     // self.fakeBar = [[UIToolbar alloc] initWithFrame:self.bounds];
-    self.fakeBar = [[_UIBackdropView alloc] initWithFrame:self.bounds settings:[[[_UIBackdropViewSettings alloc] initWithDefaultValues] autorelease]];
+    self.fakeBar = [[_UIBackdropView alloc] initWithFrame:self.bounds]; // settings:[[[_UIBackdropViewSettings alloc] initWithDefaultValues] autorelease]];
     self.fakeBar.autoresizingMask = self.autoresizingMask;
     // [self.fakeBar applySettingsWithBuiltInAnimatieon: [_UIBackdropView defaultSettingsClass]];
     // self.fakeBar.barStyle = UIBarStyleDefault;
@@ -143,6 +143,7 @@ static MS7ConvoPreview *rightPreview;
 
 %new(v@:B)
 -(void)resetPreviewsAnimated:(BOOL)shouldAnimate {
+    // NSLog(@"RESET PREVIEWS ANIMATED: %@", shouldAnimate?@"YES":@"NO");
     int height = 70+80;
     if ([self _isGroupMessage]) {
         height = 70+80+44;
@@ -154,6 +155,7 @@ static MS7ConvoPreview *rightPreview;
         rightPreview.alpha = 1.0;
 
     } else {
+        // NSLog(@"159");
         // animate to default positions.
         [UIView animateWithDuration:0.4
                               delay:0.0
@@ -172,14 +174,14 @@ static MS7ConvoPreview *rightPreview;
 %new(v@:@)
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
-    NSLog(@"MS7_handlepan");
+    // NSLog(@"MS7_handlepan");
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         // reset the previews just in case they're still animating
         [self.view.superview.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
         leftPreview.alpha = 1.0;
         rightPreview.alpha = 1.0;
-        NSLog(@"BEGAN SHIT");
+        // NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
 
@@ -195,8 +197,8 @@ static MS7ConvoPreview *rightPreview;
                 //maybe show bounce animation here
             }
         }
-        // NSLog(@"%i", (int)[convos count]);
-        // NSLog(@"%i", nextConvoIndex);
+        NSLog(@"%i", (int)[convos count]);
+        NSLog(@"%i", nextConvoIndex);
         [self setLeftConversation: [convos objectAtIndex: nextConvoIndex]];
         nextConvoIndex = 0;
         nextConvoIndex = currentConvoIndex + 1;
@@ -210,12 +212,12 @@ static MS7ConvoPreview *rightPreview;
         }
         [self setRightConversation: [convos objectAtIndex: nextConvoIndex]];
     }
-    NSLog(@"213");
+    // NSLog(@"213");
 
 
     // now move both of the views
     int translation = [recognizer translationInView:recognizer.view].x;
-    // NSLog(@"%i", translation);
+    NSLog(@"%i", translation);
 
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
@@ -230,7 +232,7 @@ static MS7ConvoPreview *rightPreview;
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"ENDED SHIT: %@", (leftTriggered||rightTriggered)?@"YES":@"NO");
+        // NSLog(@"ENDED SHIT: %@", (leftTriggered||rightTriggered)?@"YES":@"NO");
         int nextConvoIndex = 0;
         if (leftTriggered) {
             // swiped to left, so -1
@@ -277,8 +279,8 @@ static MS7ConvoPreview *rightPreview;
 %new(v@:)
 - (void)initPreviews
 {
-    leftPreview = [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)] autorelease];
-    rightPreview = [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)] autorelease];
+    leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
+    rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
 
     // now create the labels and add them to the blurred view
     leftNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(10, 10, 100, 55)];
@@ -321,17 +323,10 @@ static MS7ConvoPreview *rightPreview;
     [rightPreview addSubview: rightMessageLabel];
 }
 
-%new(v@:)
--(void)addPreviews {
-    [self.view.superview addSubview: leftPreview];
-    [self.view.superview addSubview: rightPreview];
-    [self resetPreviewsAnimated: NO];
-}
-
 %new(v@:@)
 - (void)setLeftConversation:(CKConversation *)convo
 {
-    // NSLog(@"left convo: %@", convo);
+    NSLog(@"left convo: %@", convo);
     [leftNameLabel setText: [convo name]?:@"Unknown - Error"];
     [leftMessageLabel setText: [[convo latestMessage] previewText]?:@"Error Retrieving Message"];
 }
@@ -343,10 +338,12 @@ static MS7ConvoPreview *rightPreview;
 }
 
 //delegate methods
+%new(B@:@@)
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    NSLog(@"shouldReceiveTouch");
+    // NSLog(@"shouldReceiveTouch");
     if (![self _isVisible] || !globalEnable) {
+        // NSLog(@"NOT ACCEPTING TOUCH");
         return NO;
     }
 
@@ -367,10 +364,12 @@ static MS7ConvoPreview *rightPreview;
     // NSLog(@"NOT ACCEPTED");
     return NO;
 }
+%new(B@:@@)
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
     return YES;
 }
+%new(B@:@)
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
     return YES;
@@ -410,7 +409,9 @@ static MS7ConvoPreview *rightPreview;
         }
 
         if (self) {
-            [self addPreviews];
+            [self.view.superview addSubview: leftPreview];
+            [self.view.superview addSubview: rightPreview];
+            [self resetPreviewsAnimated: NO];
             convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
         }
 
@@ -477,7 +478,7 @@ static MS7ConvoPreview *rightPreview;
 %hook SMSApplication
 - (void)applicationDidBecomeActive:(id)fp8
 {
-    // NSLog(@"APPLICATION DID BECOME ACTIVE, BITCH");
+    NSLog(@"APPLICATION DID BECOME ACTIVE, BITCH");
     // %log;
     %orig;
 }
