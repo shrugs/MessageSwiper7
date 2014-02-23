@@ -6,5 +6,10 @@ Description: An awesome MobileSubstrate tweak!
 Maintainer: MattCMultimedia
 Author: MattCMultimedia
 Section: Tweaks
+<<<<<<< HEAD
 Version: 0.0.1-557
 Installed-Size: 144
+=======
+Version: 0.0.1-652
+Installed-Size: 176
+>>>>>>> integrated

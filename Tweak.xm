@@ -8,6 +8,7 @@
 
 // Messages Imports
 #import "MobileSMS/CKMessagesController.h"
+#import "MobileSMS/SMSApplication.h"
 
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
@@ -15,7 +16,13 @@
 #import <iOS7/Frameworks/UIKit/_UIBackdropView.h>
 #import <iOS7/Frameworks/UIKit/_UIBackdropViewSettingsUltraLight.h>
 
+#import <objc/runtime.h>
+
 // #import <substrate.h>
+
+
+
+
 
 // PREFERENCES
 #define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper.plist"]
@@ -28,9 +35,11 @@ static int edgePercent = 20; //%
 static BOOL didRun = NO;
 
 static CKMessagesController *ckMessagesController = nil;
-static UIView *backPlacard = nil;
-static NSMutableArray *convos = [[NSMutableArray alloc] init];
+// static UIView *backPlacard = nil;
+static NSMutableArray *convos = [[[NSMutableArray alloc] init] autorelease];
 static int currentConvoIndex = 0;
+static BOOL leftTriggered = NO;
+static BOOL rightTriggered = NO;
 
 static UILabel *leftNameLabel;
 static UILabel *rightNameLabel;
@@ -519,7 +528,7 @@ MS7ConvoPreview
     self.alpha = 0;
 
     // self.fakeBar = [[UIToolbar alloc] initWithFrame:self.bounds];
-    self.fakeBar = [[_UIBackdropView alloc] initWithFrame: self.bounds];
+    self.fakeBar = [[_UIBackdropView alloc] initWithFrame:self.bounds]; // settings:[[[_UIBackdropViewSettings alloc] initWithDefaultValues] autorelease]];
     self.fakeBar.autoresizingMask = self.autoresizingMask;
     // [self.fakeBar applySettingsWithBuiltInAnimatieon: [_UIBackdropView defaultSettingsClass]];
     // self.fakeBar.barStyle = UIBarStyleDefault;
@@ -546,30 +555,84 @@ END MS7ConvoPreview
 
 
 */
+
+
+
+// @interface CKTranscriptController
+// @property (nonatomic, retain) MS7ConvoPreview *leftPreview;
+// @property (nonatomic, retain) MS7ConvoPreview *rightPreview;
+
+// @end
+// @implementation CKTranscriptController
+// static char leftHash;
+// static char rightHash;
+// static char swipeDelegateHash;
+// - (MS7ConvoPreview *)leftPreview {
+//     return objc_getAssociatedObject(self, &leftHash);
+// }
+// - (void)setLeftPreview:(MS7ConvoPreview *)p {
+//     objc_setAssociatedObject(self, &leftHash, p, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+// }
+
+// - (MS7ConvoPreview *)rightPreview {
+//     return objc_getAssociatedObject(self, &rightHash);
+// }
+// - (void)setRightPreview:(MS7ConvoPreview *)p {
+//     objc_setAssociatedObject(self, &rightHash, p, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+// }
+
+// @end
+
 static MS7ConvoPreview *leftPreview;
 static MS7ConvoPreview *rightPreview;
 
-/*
 
 
-MS7SwipeDelegate
-*/
-@interface MS7SwipeDelegate : NSObject <UIGestureRecognizerDelegate>
 
--(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer;
--(void)addPreviews;
-- (void)setLeftConversation:(CKConversation *)convo;
-- (void)setRightConversation:(CKConversation *)convo;
-@end
+%group Messages
 
-@implementation MS7SwipeDelegate
+// There's only one CKTranscriptController instantiated.
+// It controls which CkTranscriptCollectionView is shown.
+// Those CKTranscriptCollectionView s have a subview of class CKTranscriptScrollView (orsomething like that)
+%hook CKTranscriptController
+
+%new(v@:B)
+-(void)resetPreviewsAnimated:(BOOL)shouldAnimate {
+    // NSLog(@"RESET PREVIEWS ANIMATED: %@", shouldAnimate?@"YES":@"NO");
+    int height = 70+80;
+    if ([self _isGroupMessage]) {
+        height = 70+80+44;
+    }
+    if (!shouldAnimate) {
+        [leftPreview setCenter:CGPointMake(-60, height)];
+        [rightPreview setCenter:CGPointMake(self.view.superview.frame.size.width+60, height)];
+        leftPreview.alpha = 1.0;
+        rightPreview.alpha = 1.0;
+
+    } else {
+        // NSLog(@"159");
+        // animate to default positions.
+        [UIView animateWithDuration:0.4
+                              delay:0.0
+                            options: UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                            leftPreview.center = CGPointMake(-60, leftPreview.center.y);
+                            rightPreview.center = CGPointMake(self.view.superview.frame.size.width+60, leftPreview.center.y);
+                            leftPreview.alpha = 0;
+                            rightPreview.alpha = 0;
+                         }
+                         completion:nil];
+    }
+}
 
 
+%new(v@:@)
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
+    // NSLog(@"MS7_handlepan");
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         // reset the previews just in case they're still animating
-        [backPlacard.layer removeAllAnimations];
+        [self.view.superview.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
         leftPreview.alpha = 1.0;
         rightPreview.alpha = 1.0;
@@ -589,8 +652,8 @@ MS7SwipeDelegate
                 //maybe show bounce animation here
             }
         }
-        // NSLog(@"%i", (int)[convos count]);
-        // NSLog(@"%i", nextConvoIndex);
+        NSLog(@"%i", (int)[convos count]);
+        NSLog(@"%i", nextConvoIndex);
         [self setLeftConversation: [convos objectAtIndex: nextConvoIndex]];
         nextConvoIndex = 0;
         nextConvoIndex = currentConvoIndex + 1;
@@ -604,11 +667,12 @@ MS7SwipeDelegate
         }
         [self setRightConversation: [convos objectAtIndex: nextConvoIndex]];
     }
+    // NSLog(@"213");
 
 
     // now move both of the views
     int translation = [recognizer translationInView:recognizer.view].x;
-    // NSLog(@"%i", translation);
+    NSLog(@"%i", translation);
 
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
@@ -617,9 +681,9 @@ MS7SwipeDelegate
     leftTriggered = leftPreview.center.x == 60;
 
 
-    newX = (int) backPlacard.frame.size.width+60+translation;
-    [rightPreview setCenter:CGPointMake(MAX(backPlacard.frame.size.width-60, newX), rightPreview.center.y)];
-    rightTriggered = rightPreview.center.x == backPlacard.frame.size.width-60;
+    newX = (int) self.view.superview.frame.size.width+60+translation;
+    [rightPreview setCenter:CGPointMake(MAX(self.view.superview.frame.size.width-60, newX), rightPreview.center.y)];
+    rightTriggered = rightPreview.center.x == self.view.superview.frame.size.width-60;
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
@@ -660,111 +724,88 @@ MS7SwipeDelegate
 
 }
 
--(id)init {
-    self = [super init];
-    if (self) {
-        leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
-        rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
 
-        // now create the labels and add them to the blurred view
-        leftNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(10, 10, 100, 55)];
-        rightNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(10, 10, 100, 55)];
-        leftMessageLabel = [[UILabel alloc] initWithFrame: CGRectMake(10,10+50+10,100,80)];
-        rightMessageLabel = [[UILabel alloc] initWithFrame: CGRectMake(10,10+50+10,100,80)];
-
-
-        [leftNameLabel setTextColor: [UIColor blackColor]];
-        [leftNameLabel setBackgroundColor:[UIColor clearColor]];
-        [rightNameLabel setTextColor: [UIColor blackColor]];
-        [rightNameLabel setBackgroundColor:[UIColor clearColor]];
-        [leftNameLabel setFont: [UIFont systemFontOfSize: 14.0f]];
-        [rightNameLabel setFont: [UIFont systemFontOfSize: 14.0f]];
-        [leftNameLabel setNumberOfLines: 4];
-        [rightNameLabel setNumberOfLines: 4];
-        [leftNameLabel setLineBreakMode: NSLineBreakByWordWrapping];
-        [rightNameLabel setLineBreakMode: NSLineBreakByWordWrapping];
-
-        //add message label here
-        [leftMessageLabel setTextColor: [UIColor blackColor]];
-        [leftMessageLabel setBackgroundColor: [UIColor clearColor]];
-        [rightMessageLabel setTextColor: [UIColor blackColor]];
-        [rightMessageLabel setBackgroundColor: [UIColor clearColor]];
-        [leftMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
-        [rightMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
-        [leftMessageLabel setNumberOfLines: 10];
-        [rightMessageLabel setNumberOfLines: 10];
-        [leftMessageLabel setLineBreakMode: NSLineBreakByWordWrapping];
-        [rightMessageLabel setLineBreakMode: NSLineBreakByWordWrapping];
-
-        [leftNameLabel setText: @"Unknown - Error"];
-        [rightNameLabel setText: @"Unknown - Error"];
-        [leftMessageLabel setText: @"Error Retrieving Message"];
-        [rightMessageLabel setText: @"Error Retrieving Message"];
-
-        [leftPreview addSubview: leftNameLabel];
-        [rightPreview addSubview: rightNameLabel];
-        [leftPreview addSubview: leftMessageLabel];
-        [rightPreview addSubview: rightMessageLabel];
-    }
-    return self;
+- (void)dealloc
+{
+    %log;
+    %orig;
 }
 
--(void)addPreviews {
+%new(v@:)
+- (void)initPreviews
+{
+    leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
+    rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
 
-    [backPlacard addSubview: leftPreview];
-    [backPlacard addSubview: rightPreview];
-    [self resetPreviewsAnimated: NO];
+    // now create the labels and add them to the blurred view
+    leftNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(10, 10, 100, 55)];
+    rightNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(10, 10, 100, 55)];
+    leftMessageLabel = [[UILabel alloc] initWithFrame: CGRectMake(10,10+50+10,100,80)];
+    rightMessageLabel = [[UILabel alloc] initWithFrame: CGRectMake(10,10+50+10,100,80)];
 
+
+    [leftNameLabel setTextColor: [UIColor blackColor]];
+    [leftNameLabel setBackgroundColor:[UIColor clearColor]];
+    [rightNameLabel setTextColor: [UIColor blackColor]];
+    [rightNameLabel setBackgroundColor:[UIColor clearColor]];
+    [leftNameLabel setFont: [UIFont systemFontOfSize: 14.0f]];
+    [rightNameLabel setFont: [UIFont systemFontOfSize: 14.0f]];
+    [leftNameLabel setNumberOfLines: 4];
+    [rightNameLabel setNumberOfLines: 4];
+    [leftNameLabel setLineBreakMode: NSLineBreakByWordWrapping];
+    [rightNameLabel setLineBreakMode: NSLineBreakByWordWrapping];
+
+    //add message label here
+    [leftMessageLabel setTextColor: [UIColor blackColor]];
+    [leftMessageLabel setBackgroundColor: [UIColor clearColor]];
+    [rightMessageLabel setTextColor: [UIColor blackColor]];
+    [rightMessageLabel setBackgroundColor: [UIColor clearColor]];
+    [leftMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
+    [rightMessageLabel setFont:[UIFont systemFontOfSize: 12.0f]];
+    [leftMessageLabel setNumberOfLines: 10];
+    [rightMessageLabel setNumberOfLines: 10];
+    [leftMessageLabel setLineBreakMode: NSLineBreakByWordWrapping];
+    [rightMessageLabel setLineBreakMode: NSLineBreakByWordWrapping];
+
+    [leftNameLabel setText: @"Unknown - Error"];
+    [rightNameLabel setText: @"Unknown - Error"];
+    [leftMessageLabel setText: @"Error Retrieving Message"];
+    [rightMessageLabel setText: @"Error Retrieving Message"];
+
+    [leftPreview addSubview: leftNameLabel];
+    [rightPreview addSubview: rightNameLabel];
+    [leftPreview addSubview: leftMessageLabel];
+    [rightPreview addSubview: rightMessageLabel];
 }
+
+%new(v@:@)
 - (void)setLeftConversation:(CKConversation *)convo
 {
-    // NSLog(@"left convo: %@", convo);
+    NSLog(@"left convo: %@", convo);
     [leftNameLabel setText: [convo name]?:@"Unknown - Error"];
     [leftMessageLabel setText: [[convo latestMessage] previewText]?:@"Error Retrieving Message"];
 }
+%new(v@:@)
 - (void)setRightConversation:(CKConversation *)convo
 {
     [rightNameLabel setText: [convo name]?:@"Unknown - Error"];
     [rightMessageLabel setText: [[convo latestMessage] previewText]?:@"Error Retrieving Message"];
 }
 
--(void)resetPreviewsAnimated:(BOOL)shouldAnimate {
-    int height = 70+80;
-    if ([cKTranscriptController _isGroupMessage]) {
-        height = 70+80+44;
-    }
-    if (!shouldAnimate) {
-        [leftPreview setCenter:CGPointMake(-60, height)];
-        [rightPreview setCenter:CGPointMake(backPlacard.frame.size.width+60, height)];
-        leftPreview.alpha = 1.0;
-        rightPreview.alpha = 1.0;
-
-    } else {
-        // animate to default positions.
-        [UIView animateWithDuration:0.4
-                              delay:0.0
-                            options: UIViewAnimationOptionCurveEaseOut
-                         animations:^{
-                            leftPreview.center = CGPointMake(-60, leftPreview.center.y);
-                            rightPreview.center = CGPointMake(backPlacard.frame.size.width+60, leftPreview.center.y);
-                            leftPreview.alpha = 0;
-                            rightPreview.alpha = 0;
-                         }
-                         completion:nil];
-    }
-}
-
 //delegate methods
+%new(B@:@@)
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    if (![cKTranscriptController _isVisible] || !globalEnable) {
+    // NSLog(@"shouldReceiveTouch");
+    if (![self _isVisible] || !globalEnable) {
+        // NSLog(@"NOT ACCEPTING TOUCH");
         return NO;
     }
 
-    // Get the touch's location in the backPlacard view
+    // Get the touch's location in the self.view.superview view
     // if between the bounds we care about, return yes, else, no
-    CGPoint coord = [touch locationInView: backPlacard];
-    float w = backPlacard.frame.size.width;
+    CGPoint coord = [touch locationInView: self.view.superview];
+    float w = self.view.superview.frame.size.width;
     float edgeSize = (edgePercent/100.0)*w;
 
     if (detectCenter && (coord.x > edgeSize) && (coord.x < w-edgeSize)) {
@@ -778,61 +819,65 @@ MS7SwipeDelegate
     // NSLog(@"NOT ACCEPTED");
     return NO;
 }
+%new(B@:@@)
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
     return YES;
 }
+%new(B@:@)
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
     return YES;
 }
-@end
-/*
-END MS7SwipeDelegate
 
-
-*/
-
-static MS7SwipeDelegate *swipeDelegate;
-
-// There's only one CKTranscriptController instantiated.
-// It controls which CkTranscriptCollectionView is shown.
-// Those CKTranscriptCollectionView s have a subview of class CKTranscriptScrollView (orsomething like that)
-%hook CKTranscriptController
+- (id)initWithNavigationController:(id)arg1
+{
+    %log;
+    [self initPreviews];
+    return %orig;
+}
+- (id)init
+{
+    %log;
+    [self initPreviews];
+    return %orig;
+}
 
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
-    backPlacard = self.view.superview;
 
 
 
-    if (backPlacard) {
+    if (self.view.superview) {
         if (!didRun) {
             didRun = YES;
-            cKTranscriptController = self;
-            swipeDelegate = [[MS7SwipeDelegate alloc] init];
 
-            backPlacard.userInteractionEnabled = YES;
-            UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS7_handlepan:)];
+            self.view.superview.userInteractionEnabled = YES;
+            UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(MS7_handlepan:)];
             panRecognizer.maximumNumberOfTouches = 1;
-            [panRecognizer setDelegate:swipeDelegate];
+            [panRecognizer setDelegate:self];
             // [panRecognizer _setHysteresis: 50.0];
-            [backPlacard addGestureRecognizer: panRecognizer];
+            [self.view.superview addGestureRecognizer: panRecognizer];
             [panRecognizer release];
-            // now add the previews to the backPlacard
-            [swipeDelegate addPreviews];
+            // now add the previews to the self.view.superview
 
         }
-        [swipeDelegate addPreviews];
 
-        convos = [[%c(CKConversationList) sharedConversationList] conversations];
+        if (self) {
+            [self.view.superview addSubview: leftPreview];
+            [self.view.superview addSubview: rightPreview];
+            [self resetPreviewsAnimated: NO];
+            convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+        }
+
     }
 }
 
 - (void)sendMessage:(id)arg1 {
-    %orig;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    %log;
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = 0;
+    %orig;
 
 }
 
@@ -847,12 +892,14 @@ static MS7SwipeDelegate *swipeDelegate;
 - (void)_conversationLeft:(id)fp8 {
 
     // left a conversation? update the list
+    %log;
     %orig;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
 }
 
 - (BOOL)resumeToConversation:(id)fp8 {
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    %log;
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
 
     return %orig;
@@ -861,14 +908,14 @@ static MS7SwipeDelegate *swipeDelegate;
 
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
-    // %log;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    %log;
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
-    // %log;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    %log;
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
@@ -882,7 +929,6 @@ static MS7SwipeDelegate *swipeDelegate;
 }
 
 %end
-
 
 %end
 
