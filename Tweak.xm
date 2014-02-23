@@ -172,7 +172,7 @@ MS7SwipeDelegate
 }
 
 -(void)addPreviews {
-
+    NSLog(@"addPreviews, %@, %@, %@", self.backPlacard, self.leftPreview, self.rightPreview);
     [self.backPlacard addSubview: self.leftPreview];
     [self.backPlacard addSubview: self.rightPreview];
     [self resetPreviewsAnimated: NO];
@@ -467,12 +467,12 @@ static MS7SwipeDelegate *swipeDelegate;
 %end
 
 %hook SMSApplication
-// - (void)applicationDidBecomeActive:(id)fp8
-// {
-//     // NSLog(@"APPLICATION DID BECOME ACTIVE, BITCH");
-//     // %log;
-//     %orig;
-// }
+- (void)applicationDidBecomeActive:(id)fp8
+{
+    // NSLog(@"APPLICATION DID BECOME ACTIVE, BITCH");
+    // %log;
+    %orig;
+}
 - (void)setMessagesController:(id)fp8
 {
     %log;
