@@ -8,6 +8,7 @@
 
 // Messages Imports
 #import "MobileSMS/CKMessagesController.h"
+#import "MobileSMS/SMSApplication.h"
 
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
@@ -28,7 +29,7 @@ static int edgePercent = 20; //%
 static BOOL didRun = NO;
 static CKMessagesController *ckMessagesController = nil;
 static UIView *backPlacard = nil;
-static NSMutableArray *convos = [[NSMutableArray alloc] init];
+static NSMutableArray *convos = [[[NSMutableArray alloc] init] autorelease];
 static int currentConvoIndex = 0;
 static BOOL leftTriggered = NO;
 static BOOL rightTriggered = NO;
@@ -108,105 +109,14 @@ MS7SwipeDelegate
 -(void)addPreviews;
 - (void)setLeftConversation:(CKConversation *)convo;
 - (void)setRightConversation:(CKConversation *)convo;
+
+@property (nonatomic, retain) UIView *backPlacard;
+
 @end
 
 @implementation MS7SwipeDelegate
 
-
--(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
-{
-    if (recognizer.state == UIGestureRecognizerStateBegan) {
-        // reset the previews just in case they're still animating
-        [backPlacard.layer removeAllAnimations];
-        [self resetPreviewsAnimated:NO];
-        leftPreview.alpha = 1.0;
-        rightPreview.alpha = 1.0;
-        // NSLog(@"BEGAN SHIT");
-        leftTriggered = NO;
-        rightTriggered = NO;
-
-        // get conversations for the previews
-        // swiped to left, so -1
-        int nextConvoIndex = 0;
-        nextConvoIndex = currentConvoIndex - 1;
-        if (currentConvoIndex == 0) {
-            if (wrapAroundEnabled) {
-                nextConvoIndex = [convos count] - 1 ;
-            } else {
-                nextConvoIndex = 0;
-                //maybe show bounce animation here
-            }
-        }
-        // NSLog(@"%i", (int)[convos count]);
-        // NSLog(@"%i", nextConvoIndex);
-        [self setLeftConversation: [convos objectAtIndex: nextConvoIndex]];
-        nextConvoIndex = 0;
-        nextConvoIndex = currentConvoIndex + 1;
-        if (nextConvoIndex >= [convos count]) {
-            if (wrapAroundEnabled) {
-                nextConvoIndex = 0;
-            } else {
-                nextConvoIndex = currentConvoIndex;
-                //maybe show bounce animation here
-            }
-        }
-        [self setRightConversation: [convos objectAtIndex: nextConvoIndex]];
-    }
-
-
-    // now move both of the views
-    int translation = [recognizer translationInView:recognizer.view].x;
-    // NSLog(@"%i", translation);
-
-    // Move both previews
-    // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
-    int newX = (int) -60+translation;
-    [leftPreview setCenter:CGPointMake(MIN(60, newX), leftPreview.center.y)];
-    leftTriggered = leftPreview.center.x == 60;
-
-
-    newX = (int) backPlacard.frame.size.width+60+translation;
-    [rightPreview setCenter:CGPointMake(MAX(backPlacard.frame.size.width-60, newX), rightPreview.center.y)];
-    rightTriggered = rightPreview.center.x == backPlacard.frame.size.width-60;
-
-
-    if (recognizer.state == UIGestureRecognizerStateEnded) {
-        // NSLog(@"ENDED SHIT: %@", (leftTriggered||rightTriggered)?@"YES":@"NO");
-        int nextConvoIndex = 0;
-        if (leftTriggered) {
-            // swiped to left, so -1
-            nextConvoIndex = currentConvoIndex - 1;
-            if (currentConvoIndex == 0) {
-                if (wrapAroundEnabled) {
-                    nextConvoIndex = [convos count] - 1 ;
-                } else {
-                    nextConvoIndex = 0;
-                    //maybe show bounce animation here
-                }
-            }
-        }
-        if (rightTriggered) {
-            nextConvoIndex = currentConvoIndex + 1;
-            if (nextConvoIndex >= [convos count]) {
-                if (wrapAroundEnabled) {
-                    nextConvoIndex = 0;
-                } else {
-                    nextConvoIndex = currentConvoIndex;
-                    //maybe show bounce animation here
-                }
-            }
-        }
-
-        // now present the user with the next conversation, possibly with a nice sliding animation?
-        if (leftTriggered || rightTriggered) {
-            [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
-        }
-
-        [self resetPreviewsAnimated:YES];
-    }
-
-
-}
+@synthesize backPlacard = _backPlacard;
 
 -(id)init {
     self = [super init];
@@ -259,11 +169,107 @@ MS7SwipeDelegate
 
 -(void)addPreviews {
 
-    [backPlacard addSubview: leftPreview];
-    [backPlacard addSubview: rightPreview];
+    [self.backPlacard addSubview: leftPreview];
+    [self.backPlacard addSubview: rightPreview];
     [self resetPreviewsAnimated: NO];
+}
+
+-(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
+{
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        // reset the previews just in case they're still animating
+        [self.backPlacard.layer removeAllAnimations];
+        [self resetPreviewsAnimated:NO];
+        leftPreview.alpha = 1.0;
+        rightPreview.alpha = 1.0;
+        // NSLog(@"BEGAN SHIT");
+        leftTriggered = NO;
+        rightTriggered = NO;
+
+        // get conversations for the previews
+        // swiped to left, so -1
+        int nextConvoIndex = 0;
+        nextConvoIndex = currentConvoIndex - 1;
+        if (currentConvoIndex == 0) {
+            if (wrapAroundEnabled) {
+                nextConvoIndex = [convos count] - 1 ;
+            } else {
+                nextConvoIndex = 0;
+                //maybe show bounce animation here
+            }
+        }
+        // NSLog(@"%i", (int)[convos count]);
+        // NSLog(@"%i", nextConvoIndex);
+        [self setLeftConversation: [convos objectAtIndex: nextConvoIndex]];
+        nextConvoIndex = 0;
+        nextConvoIndex = currentConvoIndex + 1;
+        if (nextConvoIndex >= [convos count]) {
+            if (wrapAroundEnabled) {
+                nextConvoIndex = 0;
+            } else {
+                nextConvoIndex = currentConvoIndex;
+                //maybe show bounce animation here
+            }
+        }
+        [self setRightConversation: [convos objectAtIndex: nextConvoIndex]];
+    }
+
+
+    // now move both of the views
+    int translation = [recognizer translationInView:recognizer.view].x;
+    // NSLog(@"%i", translation);
+
+    // Move both previews
+    // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
+    int newX = (int) -60+translation;
+    [leftPreview setCenter:CGPointMake(MIN(60, newX), leftPreview.center.y)];
+    leftTriggered = leftPreview.center.x == 60;
+
+
+    newX = (int) self.backPlacard.frame.size.width+60+translation;
+    [rightPreview setCenter:CGPointMake(MAX(self.backPlacard.frame.size.width-60, newX), rightPreview.center.y)];
+    rightTriggered = rightPreview.center.x == self.backPlacard.frame.size.width-60;
+
+
+    if (recognizer.state == UIGestureRecognizerStateEnded) {
+        // NSLog(@"ENDED SHIT: %@", (leftTriggered||rightTriggered)?@"YES":@"NO");
+        int nextConvoIndex = 0;
+        if (leftTriggered) {
+            // swiped to left, so -1
+            nextConvoIndex = currentConvoIndex - 1;
+            if (currentConvoIndex == 0) {
+                if (wrapAroundEnabled) {
+                    nextConvoIndex = [convos count] - 1 ;
+                } else {
+                    nextConvoIndex = 0;
+                    //maybe show bounce animation here
+                }
+            }
+        }
+        if (rightTriggered) {
+            nextConvoIndex = currentConvoIndex + 1;
+            if (nextConvoIndex >= [convos count]) {
+                if (wrapAroundEnabled) {
+                    nextConvoIndex = 0;
+                } else {
+                    nextConvoIndex = currentConvoIndex;
+                    //maybe show bounce animation here
+                }
+            }
+        }
+
+        // now present the user with the next conversation, possibly with a nice sliding animation?
+        if (leftTriggered || rightTriggered) {
+            [ckMessagesController showConversation:[convos objectAtIndex:nextConvoIndex] animate:YES];
+        }
+
+        [self resetPreviewsAnimated:YES];
+    }
+
 
 }
+
+
 - (void)setLeftConversation:(CKConversation *)convo
 {
     // NSLog(@"left convo: %@", convo);
@@ -283,7 +289,7 @@ MS7SwipeDelegate
     }
     if (!shouldAnimate) {
         [leftPreview setCenter:CGPointMake(-60, height)];
-        [rightPreview setCenter:CGPointMake(backPlacard.frame.size.width+60, height)];
+        [rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60, height)];
         leftPreview.alpha = 1.0;
         rightPreview.alpha = 1.0;
 
@@ -294,7 +300,7 @@ MS7SwipeDelegate
                             options: UIViewAnimationOptionCurveEaseOut
                          animations:^{
                             leftPreview.center = CGPointMake(-60, leftPreview.center.y);
-                            rightPreview.center = CGPointMake(backPlacard.frame.size.width+60, leftPreview.center.y);
+                            rightPreview.center = CGPointMake(self.backPlacard.frame.size.width+60, leftPreview.center.y);
                             leftPreview.alpha = 0;
                             rightPreview.alpha = 0;
                          }
@@ -309,10 +315,10 @@ MS7SwipeDelegate
         return NO;
     }
 
-    // Get the touch's location in the backPlacard view
+    // Get the touch's location in the self.backPlacard view
     // if between the bounds we care about, return yes, else, no
-    CGPoint coord = [touch locationInView: backPlacard];
-    float w = backPlacard.frame.size.width;
+    CGPoint coord = [touch locationInView: self.backPlacard];
+    float w = self.backPlacard.frame.size.width;
     float edgeSize = (edgePercent/100.0)*w;
 
     if (detectCenter && (coord.x > edgeSize) && (coord.x < w-edgeSize)) {
@@ -356,17 +362,34 @@ static MS7SwipeDelegate *swipeDelegate;
 // Those CKTranscriptCollectionView s have a subview of class CKTranscriptScrollView (orsomething like that)
 %hook CKTranscriptController
 
+- (void)dealloc
+{
+    %log;
+    %orig;
+}
+- (id)initWithNavigationController:(id)arg1
+{
+    %log;
+    return %orig;
+}
+- (id)init
+{
+    %log;
+    return %orig;
+}
+
 - (void)viewDidAppear:(BOOL)arg1 {
     %orig;
     backPlacard = self.view.superview;
 
 
 
-    if (backPlacard) {
+    if (backPlacard && self) {
         if (!didRun) {
             didRun = YES;
             cKTranscriptController = self;
-            swipeDelegate = [[MS7SwipeDelegate alloc] init];
+            swipeDelegate = [[[MS7SwipeDelegate alloc] init] autorelease];
+            [swipeDelegate setBackPlacard: backPlacard];
 
             backPlacard.userInteractionEnabled = YES;
             UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:swipeDelegate action:@selector(MS7_handlepan:)];
@@ -381,16 +404,16 @@ static MS7SwipeDelegate *swipeDelegate;
         }
         [swipeDelegate addPreviews];
 
-        convos = [[%c(CKConversationList) sharedConversationList] conversations];
+        convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     }
 }
 
-// - (void)sendMessage:(id)arg1 {
-//     convos = [[%c(CKConversationList) sharedConversationList] conversations];
-//     currentConvoIndex = 0;
-//     %orig;
+- (void)sendMessage:(id)arg1 {
+    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+    currentConvoIndex = 0;
+    %orig;
 
-// }
+}
 
 %end
 
@@ -404,11 +427,11 @@ static MS7SwipeDelegate *swipeDelegate;
 
     // left a conversation? update the list
     %orig;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
 }
 
 - (BOOL)resumeToConversation:(id)fp8 {
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
 
     return %orig;
@@ -418,13 +441,13 @@ static MS7SwipeDelegate *swipeDelegate;
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
     // %log;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
     // %log;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations];
+    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
@@ -437,6 +460,20 @@ static MS7SwipeDelegate *swipeDelegate;
     return r;
 }
 
+%end
+
+%hook SMSApplication
+// - (void)applicationDidBecomeActive:(id)fp8
+// {
+//     // NSLog(@"APPLICATION DID BECOME ACTIVE, BITCH");
+//     // %log;
+//     %orig;
+// }
+- (void)setMessagesController:(id)fp8
+{
+    %log;
+    %orig;
+}
 %end
 
 
