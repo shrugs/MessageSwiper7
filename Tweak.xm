@@ -497,8 +497,7 @@ static UILabel *rightMessageLabel;
 
 %group MessagesiOS7
 
-static BOOL leftTriggered = NO;
-static BOOL rightTriggered = NO;
+
 static CKTranscriptController *cKTranscriptController = nil;
 /*
 
@@ -587,9 +586,6 @@ static MS7ConvoPreview *leftPreview;
 static MS7ConvoPreview *rightPreview;
 
 
-
-
-%group Messages
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
