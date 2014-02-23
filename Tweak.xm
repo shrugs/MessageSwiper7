@@ -267,12 +267,6 @@ static MS7ConvoPreview *rightPreview;
 }
 
 
-- (void)dealloc
-{
-    %log;
-    %orig;
-}
-
 %new(v@:)
 - (void)initPreviews
 {
@@ -374,15 +368,15 @@ static MS7ConvoPreview *rightPreview;
 
 - (id)initWithNavigationController:(id)arg1
 {
-    %log;
+    id r = %orig;
     [self initPreviews];
-    return %orig;
+    return r;
 }
 - (id)init
 {
-    %log;
+    id r = %orig;
     [self initPreviews];
-    return %orig;
+    return r;
 }
 
 - (void)viewDidAppear:(BOOL)arg1 {
@@ -416,7 +410,6 @@ static MS7ConvoPreview *rightPreview;
 }
 
 - (void)sendMessage:(id)arg1 {
-    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = 0;
     %orig;
@@ -434,13 +427,11 @@ static MS7ConvoPreview *rightPreview;
 - (void)_conversationLeft:(id)fp8 {
 
     // left a conversation? update the list
-    %log;
     %orig;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
 }
 
 - (BOOL)resumeToConversation:(id)fp8 {
-    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
 
@@ -450,13 +441,11 @@ static MS7ConvoPreview *rightPreview;
 
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
-    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
-    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
