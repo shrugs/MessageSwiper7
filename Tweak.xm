@@ -180,6 +180,7 @@ MS7SwipeDelegate
 
 -(void)MS7_handlepan:(UIPanGestureRecognizer *)recognizer
 {
+    NSLog(@"MS7_handlepan");
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         // reset the previews just in case they're still animating
         [self.backPlacard.layer removeAllAnimations];
@@ -315,6 +316,7 @@ MS7SwipeDelegate
 //delegate methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
+    NSLog(@"shouldReceiveTouch");
     if (![cKTranscriptController _isVisible] || !globalEnable) {
         return NO;
     }
@@ -392,6 +394,7 @@ static MS7SwipeDelegate *swipeDelegate;
         if (!didRun) {
             didRun = YES;
             cKTranscriptController = self;
+            // NSLog(@"cKTranscriptController: %@", self);
             swipeDelegate = [[[MS7SwipeDelegate alloc] init] autorelease];
             [swipeDelegate setBackPlacard: backPlacard];
 
@@ -406,8 +409,10 @@ static MS7SwipeDelegate *swipeDelegate;
 
         }
 
-        [swipeDelegate addPreviews];
-        convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+        if (swipeDelegate) {
+            [swipeDelegate addPreviews];
+            convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+        }
 
     }
 }
