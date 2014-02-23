@@ -95,8 +95,8 @@ END MS7ConvoPreview
 
 
 */
-static MS7ConvoPreview *leftPreview;
-static MS7ConvoPreview *rightPreview;
+// static MS7ConvoPreview *leftPreview;
+// static MS7ConvoPreview *rightPreview;
 
 /*
 
@@ -111,18 +111,22 @@ MS7SwipeDelegate
 - (void)setRightConversation:(CKConversation *)convo;
 
 @property (nonatomic, retain) UIView *backPlacard;
+@property (nonatomic, retain) MS7ConvoPreview *leftPreview;
+@property (nonatomic, retain) MS7ConvoPreview *rightPreview;
 
 @end
 
 @implementation MS7SwipeDelegate
 
 @synthesize backPlacard = _backPlacard;
+@synthesize leftPreview = _leftPreview;
+@synthesize rightPreview = _rightPreview;
 
 -(id)init {
     self = [super init];
     if (self) {
-        leftPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)];
-        rightPreview = [[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)];
+        self.leftPreview = [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)] autorelease];
+        self.rightPreview = [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)] autorelease];
 
         // now create the labels and add them to the blurred view
         leftNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(10, 10, 100, 55)];
@@ -159,18 +163,18 @@ MS7SwipeDelegate
         [leftMessageLabel setText: @"Error Retrieving Message"];
         [rightMessageLabel setText: @"Error Retrieving Message"];
 
-        [leftPreview addSubview: leftNameLabel];
-        [rightPreview addSubview: rightNameLabel];
-        [leftPreview addSubview: leftMessageLabel];
-        [rightPreview addSubview: rightMessageLabel];
+        [self.leftPreview addSubview: leftNameLabel];
+        [self.rightPreview addSubview: rightNameLabel];
+        [self.leftPreview addSubview: leftMessageLabel];
+        [self.rightPreview addSubview: rightMessageLabel];
     }
     return self;
 }
 
 -(void)addPreviews {
 
-    [self.backPlacard addSubview: leftPreview];
-    [self.backPlacard addSubview: rightPreview];
+    [self.backPlacard addSubview: self.leftPreview];
+    [self.backPlacard addSubview: self.rightPreview];
     [self resetPreviewsAnimated: NO];
 }
 
@@ -180,8 +184,8 @@ MS7SwipeDelegate
         // reset the previews just in case they're still animating
         [self.backPlacard.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
-        leftPreview.alpha = 1.0;
-        rightPreview.alpha = 1.0;
+        self.leftPreview.alpha = 1.0;
+        self.rightPreview.alpha = 1.0;
         // NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
@@ -222,13 +226,13 @@ MS7SwipeDelegate
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
     int newX = (int) -60+translation;
-    [leftPreview setCenter:CGPointMake(MIN(60, newX), leftPreview.center.y)];
-    leftTriggered = leftPreview.center.x == 60;
+    [self.leftPreview setCenter:CGPointMake(MIN(60, newX), self.leftPreview.center.y)];
+    leftTriggered = self.leftPreview.center.x == 60;
 
 
     newX = (int) self.backPlacard.frame.size.width+60+translation;
-    [rightPreview setCenter:CGPointMake(MAX(self.backPlacard.frame.size.width-60, newX), rightPreview.center.y)];
-    rightTriggered = rightPreview.center.x == self.backPlacard.frame.size.width-60;
+    [self.rightPreview setCenter:CGPointMake(MAX(self.backPlacard.frame.size.width-60, newX), self.rightPreview.center.y)];
+    rightTriggered = self.rightPreview.center.x == self.backPlacard.frame.size.width-60;
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
@@ -288,10 +292,10 @@ MS7SwipeDelegate
         height = 70+80+44;
     }
     if (!shouldAnimate) {
-        [leftPreview setCenter:CGPointMake(-60, height)];
-        [rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60, height)];
-        leftPreview.alpha = 1.0;
-        rightPreview.alpha = 1.0;
+        [self.leftPreview setCenter:CGPointMake(-60, height)];
+        [self.rightPreview setCenter:CGPointMake(self.backPlacard.frame.size.width+60, height)];
+        self.leftPreview.alpha = 1.0;
+        self.rightPreview.alpha = 1.0;
 
     } else {
         // animate to default positions.
@@ -299,10 +303,10 @@ MS7SwipeDelegate
                               delay:0.0
                             options: UIViewAnimationOptionCurveEaseOut
                          animations:^{
-                            leftPreview.center = CGPointMake(-60, leftPreview.center.y);
-                            rightPreview.center = CGPointMake(self.backPlacard.frame.size.width+60, leftPreview.center.y);
-                            leftPreview.alpha = 0;
-                            rightPreview.alpha = 0;
+                            self.leftPreview.center = CGPointMake(-60, self.leftPreview.center.y);
+                            self.rightPreview.center = CGPointMake(self.backPlacard.frame.size.width+60, self.leftPreview.center.y);
+                            self.leftPreview.alpha = 0;
+                            self.rightPreview.alpha = 0;
                          }
                          completion:nil];
     }
@@ -404,12 +408,12 @@ static MS7SwipeDelegate *swipeDelegate;
         }
         [swipeDelegate addPreviews];
 
-        convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+        convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     }
 }
 
 - (void)sendMessage:(id)arg1 {
-    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = 0;
     %orig;
 
@@ -427,11 +431,11 @@ static MS7SwipeDelegate *swipeDelegate;
 
     // left a conversation? update the list
     %orig;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
 }
 
 - (BOOL)resumeToConversation:(id)fp8 {
-    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
 
     return %orig;
@@ -441,13 +445,13 @@ static MS7SwipeDelegate *swipeDelegate;
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
     // %log;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
     // %log;
-    convos = [[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+    convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
