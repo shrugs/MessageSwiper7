@@ -103,31 +103,6 @@ END MS7ConvoPreview
 
 
 
-// @interface CKTranscriptController
-// @property (nonatomic, retain) MS7ConvoPreview *leftPreview;
-// @property (nonatomic, retain) MS7ConvoPreview *rightPreview;
-
-// @end
-// @implementation CKTranscriptController
-// static char leftHash;
-// static char rightHash;
-// static char swipeDelegateHash;
-// - (MS7ConvoPreview *)leftPreview {
-//     return objc_getAssociatedObject(self, &leftHash);
-// }
-// - (void)setLeftPreview:(MS7ConvoPreview *)p {
-//     objc_setAssociatedObject(self, &leftHash, p, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-// }
-
-// - (MS7ConvoPreview *)rightPreview {
-//     return objc_getAssociatedObject(self, &rightHash);
-// }
-// - (void)setRightPreview:(MS7ConvoPreview *)p {
-//     objc_setAssociatedObject(self, &rightHash, p, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-// }
-
-// @end
-
 static MS7ConvoPreview *leftPreview;
 static MS7ConvoPreview *rightPreview;
 
@@ -135,7 +110,7 @@ static MS7ConvoPreview *rightPreview;
 
 // There's only one CKTranscriptController instantiated.
 // It controls which CkTranscriptCollectionView is shown.
-// Those CKTranscriptCollectionView s have a subview of class CKTranscriptScrollView (orsomething like that)
+// Those CKTranscriptCollectionView s have a subview of class CKTranscriptScrollView (or something like that)
 %hook CKTranscriptController
 
 %new(v@:B)
