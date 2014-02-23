@@ -3,29 +3,22 @@
 #import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptController.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversationList.h>
 #import <iOS7/PrivateFrameworks/ChatKit/CKConversation.h>
-#import <iOS7/PrivateFrameworks/ChatKit/CKGradientReferenceView.h>
-#import <iOS7/PrivateFrameworks/ChatKit/CKTranscriptCollectionView.h>
 
 // Messages Imports
 #import "MobileSMS/CKMessagesController.h"
-#import "MobileSMS/SMSApplication.h"
 
 // UIKit imports
 #import <iOS7/Frameworks/UIKit/UIGestureRecognizer.h>
 #import <iOS7/Frameworks/UIKit/UIView.h>
 #import <iOS7/Frameworks/UIKit/_UIBackdropView.h>
-#import <iOS7/Frameworks/UIKit/_UIBackdropViewSettingsUltraLight.h>
-
-#import <objc/runtime.h>
-
-// #import <substrate.h>
+#import <iOS7/Frameworks/UIKit/_UIBackdropViewSettings.h>
 
 
 
 
 
 // PREFERENCES
-#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper.plist"]
+#define PrefPath [[@"~" stringByExpandingTildeInPath] stringByAppendingPathComponent:@"Library/Preferences/com.mattcmultimedia.messageswiper7.plist"]
 
 static BOOL globalEnable = YES;
 static BOOL wrapAroundEnabled = YES;
@@ -524,7 +517,7 @@ static void reloadPrefsNotification(CFNotificationCenterRef center,
     MS7UpdatePreferences();
     CFNotificationCenterRef reload = CFNotificationCenterGetDarwinNotifyCenter();
     CFNotificationCenterAddObserver(reload, NULL, &reloadPrefsNotification,
-                    CFSTR("com.mattcmultimedia.messageswiper/reload"), NULL, 0);
+                    CFSTR("com.mattcmultimedia.messageswiper7/reload"), NULL, 0);
 
     %init;
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
