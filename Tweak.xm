@@ -68,7 +68,7 @@ MS7ConvoPreview
     self.alpha = 0;
 
     // self.fakeBar = [[UIToolbar alloc] initWithFrame:self.bounds];
-    self.fakeBar = [[_UIBackdropView alloc] initWithFrame: self.bounds];
+    self.fakeBar = [[_UIBackdropView alloc] initWithFrame:self.bounds settings:[[[_UIBackdropViewSettings alloc] initWithDefaultValues] autorelease]];
     self.fakeBar.autoresizingMask = self.autoresizingMask;
     // [self.fakeBar applySettingsWithBuiltInAnimatieon: [_UIBackdropView defaultSettingsClass]];
     // self.fakeBar.barStyle = UIBarStyleDefault;
@@ -403,16 +403,17 @@ static MS7SwipeDelegate *swipeDelegate;
             [backPlacard addGestureRecognizer: panRecognizer];
             [panRecognizer release];
             // now add the previews to the backPlacard
-            [swipeDelegate addPreviews];
 
         }
-        [swipeDelegate addPreviews];
 
+        [swipeDelegate addPreviews];
         convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
+
     }
 }
 
 - (void)sendMessage:(id)arg1 {
+    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = 0;
     %orig;
@@ -430,11 +431,13 @@ static MS7SwipeDelegate *swipeDelegate;
 - (void)_conversationLeft:(id)fp8 {
 
     // left a conversation? update the list
+    %log;
     %orig;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
 }
 
 - (BOOL)resumeToConversation:(id)fp8 {
+    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
 
@@ -444,13 +447,13 @@ static MS7SwipeDelegate *swipeDelegate;
 
 
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 {
-    // %log;
+    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
 }
 - (void)showConversation:(id)fp8 animate:(BOOL)fp12 forceToTranscript:(BOOL)fp16 {
-    // %log;
+    %log;
     convos = [[[%c(CKConversationList) sharedConversationList] conversations] mutableCopy];
     currentConvoIndex = [convos indexOfObject:fp8];
     %orig;
@@ -479,7 +482,6 @@ static MS7SwipeDelegate *swipeDelegate;
     %orig;
 }
 %end
-
 
 %end
 
