@@ -179,7 +179,7 @@ static MS7ConvoPreview *rightPreview;
         [self resetPreviewsAnimated:NO];
         leftPreview.alpha = 1.0;
         rightPreview.alpha = 1.0;
-        // NSLog(@"BEGAN SHIT");
+        NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
 
@@ -210,6 +210,7 @@ static MS7ConvoPreview *rightPreview;
         }
         [self setRightConversation: [convos objectAtIndex: nextConvoIndex]];
     }
+    NSLog(@"213");
 
 
     // now move both of the views
@@ -229,7 +230,7 @@ static MS7ConvoPreview *rightPreview;
 
 
     if (recognizer.state == UIGestureRecognizerStateEnded) {
-        // NSLog(@"ENDED SHIT: %@", (leftTriggered||rightTriggered)?@"YES":@"NO");
+        NSLog(@"ENDED SHIT: %@", (leftTriggered||rightTriggered)?@"YES":@"NO");
         int nextConvoIndex = 0;
         if (leftTriggered) {
             // swiped to left, so -1
@@ -276,8 +277,8 @@ static MS7ConvoPreview *rightPreview;
 %new(v@:)
 - (void)initPreviews
 {
-    [self setLeftPreview: [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)] autorelease]];
-    [self setRightPreview: [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)] autorelease]];
+    leftPreview = [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(0,70,120,160)] autorelease];
+    rightPreview = [[[MS7ConvoPreview alloc] initWithFrame:CGRectMake(320,70,120,160)] autorelease];
 
     // now create the labels and add them to the blurred view
     leftNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(10, 10, 100, 55)];
@@ -322,7 +323,6 @@ static MS7ConvoPreview *rightPreview;
 
 %new(v@:)
 -(void)addPreviews {
-    NSLog(@"addPreviews, %@, %@, %@", self.view.superview, leftPreview, rightPreview);
     [self.view.superview addSubview: leftPreview];
     [self.view.superview addSubview: rightPreview];
     [self resetPreviewsAnimated: NO];
