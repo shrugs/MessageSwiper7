@@ -1,6 +1,6 @@
 Package: com.mattcmultimedia.messageswiper
 Name: MessageSwiper7
-Depends: mobilesubstrate
+Depends: mobilesubstrate, firmware (>= 7.0)
 Version: 1.0.0
 Architecture: iphoneos-arm
 Description: Quickly switch between Message threads

@@ -194,8 +194,8 @@ static MS7ConvoPreview *rightPreview;
                 //maybe show bounce animation here
             }
         }
-        NSLog(@"%i", (int)[convos count]);
-        NSLog(@"%i", nextConvoIndex);
+        // NSLog(@"%i", (int)[convos count]);
+        // NSLog(@"%i", nextConvoIndex);
         [self setLeftConversation: [convos objectAtIndex: nextConvoIndex]];
         nextConvoIndex = 0;
         nextConvoIndex = currentConvoIndex + 1;
@@ -214,7 +214,7 @@ static MS7ConvoPreview *rightPreview;
 
     // now move both of the views
     int translation = [recognizer translationInView:recognizer.view].x;
-    NSLog(@"%i", translation);
+    // NSLog(@"%i", translation);
 
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
@@ -323,7 +323,7 @@ static MS7ConvoPreview *rightPreview;
 %new(v@:@)
 - (void)setLeftConversation:(CKConversation *)convo
 {
-    NSLog(@"left convo: %@", convo);
+    // NSLog(@"left convo: %@", convo);
     [leftNameLabel setText: [convo name]?:@"Unknown - Error"];
     [leftMessageLabel setText: [[convo latestMessage] previewText]?:@"Error Retrieving Message"];
 }
