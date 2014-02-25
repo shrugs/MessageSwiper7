@@ -1,6 +1,6 @@
 include theos/makefiles/common.mk
 
-ARCHS = armv7 arm64
+ARCHS = armv7 armv7s arm64
 
 BUNDLE_NAME = MessageSwiper7Settings
 MessageSwiper7Settings_FILES = MessageSwiper7Settings.mm

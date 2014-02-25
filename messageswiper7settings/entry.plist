@@ -5,6 +5,6 @@
 	detail = MessageSwiper7SettingsListController;
 	icon = MessageSwiper7.png;
 	isController = 1;
-	label = MessageSwiper7;
+	label = "MessageSwiper7";
     };
 }
