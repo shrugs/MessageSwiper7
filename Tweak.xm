@@ -43,8 +43,6 @@ static UILabel *rightMessageLabel;
 
 %group MessagesiOS7
 
-
-static CKTranscriptController *cKTranscriptController = nil;
 /*
 
 
