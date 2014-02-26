@@ -2,7 +2,7 @@ export THEOS_DEVICE_IP=192.168.1.4
 # because the %new fns aren't recognized as existing by the compiler
 GO_EASY_ON_ME=1
 
-ARCHS = armv7 armv7s arm64
+ARCHS := armv7 arm64
 TARGET := iphone:7.0:2.0
 include theos/makefiles/common.mk
 
