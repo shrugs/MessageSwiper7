@@ -1,10 +1,10 @@
 {
     entry = {
-	bundle = MessageSwiper7Settings;
-	cell = PSLinkCell;
-	detail = MessageSwiper7SettingsListController;
-	icon = MessageSwiper7.png;
-	isController = 1;
-	label = "MessageSwiper7";
+    	bundle = MessageSwiper7Settings;
+    	cell = PSLinkCell;
+    	detail = MessageSwiper7SettingsListController;
+    	icon = MessageSwiper7.png;
+    	isController = 1;
+    	label = MessageSwiper7;
     };
 }

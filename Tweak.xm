@@ -437,6 +437,7 @@ static MS7ConvoPreview *rightPreview;
 %end
 
 static void MS7UpdatePreferences() {
+    NSLog(@"AWW SHIT NIGGA");
     NSDictionary *preferences = [[NSDictionary alloc] initWithContentsOfFile:PrefPath];
     globalEnable = YES;
     if (preferences) {

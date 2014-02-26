@@ -1,7 +1,8 @@
+
+ARCHS = armv7 arm64
+TARGET := iphone:7.0:2.0
 include theos/makefiles/common.mk
 
-ARCHS := armv7 arm64
-TARGET := iphone:7.0:2.0
 BUNDLE_NAME = MessageSwiper7Settings
 MessageSwiper7Settings_FILES = MessageSwiper7Settings.mm
 MessageSwiper7Settings_INSTALL_PATH = /Library/PreferenceBundles
