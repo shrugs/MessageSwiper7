@@ -28,6 +28,21 @@
             <key>postNotification</key>
             <string>com.mattcmultimedia.messageswiper7/reload</string>
         </dict>
+        <!-- HIDE PREVIEWS -->
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>default</key>
+            <false/>
+            <key>defaults</key>
+            <string>com.mattcmultimedia.messageswiper7</string>
+            <key>key</key>
+            <string>hiddenPreviews</string>
+            <key>label</key>
+            <string>Hide Previews</string>
+            <key>postNotification</key>
+            <string>com.mattcmultimedia.messageswiper7/reload</string>
+        </dict>
         <!-- WRAP AROUND -->
         <dict>
             <key>cell</key>

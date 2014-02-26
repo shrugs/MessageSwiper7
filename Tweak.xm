@@ -24,6 +24,7 @@ static BOOL globalEnable = YES;
 static BOOL wrapAroundEnabled = YES;
 static BOOL detectCenter = NO;
 static int edgePercent = 20; //%
+static BOOL hiddenPreviews = NO;
 
 static BOOL didRun = NO;
 
@@ -121,8 +122,8 @@ static MS7ConvoPreview *rightPreview;
     if (!shouldAnimate) {
         [leftPreview setCenter:CGPointMake(-60, height)];
         [rightPreview setCenter:CGPointMake(self.view.superview.frame.size.width+60, height)];
-        leftPreview.alpha = 1.0;
-        rightPreview.alpha = 1.0;
+        leftPreview.alpha = 0.0;
+        rightPreview.alpha = 0.0;
 
     } else {
         // NSLog(@"159");
@@ -149,8 +150,13 @@ static MS7ConvoPreview *rightPreview;
         // reset the previews just in case they're still animating
         [self.view.superview.layer removeAllAnimations];
         [self resetPreviewsAnimated:NO];
-        leftPreview.alpha = 1.0;
-        rightPreview.alpha = 1.0;
+        if (!hiddenPreviews) {
+            leftPreview.alpha = 1.0;
+            rightPreview.alpha = 1.0;
+        } else {
+            leftPreview.alpha = 0.0;
+            rightPreview.alpha = 0.0;
+        }
         // NSLog(@"BEGAN SHIT");
         leftTriggered = NO;
         rightTriggered = NO;
@@ -191,6 +197,7 @@ static MS7ConvoPreview *rightPreview;
 
     // Move both previews
     // NOTE: make sure to update preview contents when the conversation changes, not on the handle pan
+
     int newX = (int) -60+translation;
     [leftPreview setCenter:CGPointMake(MIN(60, newX), leftPreview.center.y)];
     leftTriggered = leftPreview.center.x == 60;
@@ -446,6 +453,11 @@ static void MS7UpdatePreferences() {
             globalEnable = [[preferences valueForKey:@"globalEnable"] boolValue];
         } else {
             globalEnable = YES;
+        }
+        if ([preferences valueForKey:@"hiddenPreviews"] != nil) {
+            hiddenPreviews = [[preferences valueForKey:@"hiddenPreviews"] boolValue];
+        } else {
+            hiddenPreviews = NO;
         }
         if ([preferences valueForKey:@"wrapAroundEnabled"] != nil) {
             wrapAroundEnabled = [[preferences valueForKey:@"wrapAroundEnabled"] boolValue];
